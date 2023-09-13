@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
 
     Rigidbody rb;
     bool rightDir;
+    bool isSitting;
+    Animator anim;
 
     // jump
     bool grounded = false;
@@ -19,16 +21,30 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheck;
     public float jumpForce;
 
+
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rightDir = true;
-        
+        anim = GetComponent<Animator>();
+        isSitting = true;
+
     }
 
     private void FixedUpdate()
     {
+        if (isSitting)
+        {
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                anim.SetTrigger("sitting");  // Replace "StandUpAnimation" with the name of your animation if different.
+                isSitting = false;
+            }
+            return;  // Skip the rest of the FixedUpdate logic if Bea is sitting.
+        }
+
+
         if (grounded && Input.GetAxis("Jump") > 0)
         {
             grounded = false;
@@ -42,8 +58,16 @@ public class PlayerController : MonoBehaviour
 
 
         float move = Input.GetAxis("Horizontal"); // a, d key
+        anim.SetFloat("walk_speed", Mathf.Abs(move));
+
+        if (isSitting == false)
+        {
+            anim.SetTrigger("goIdle");  // Transition to the "idle" state when the player starts moving
+        }
 
         float running = Input.GetAxisRaw("Fire3"); // left shift
+        anim.SetFloat("speed", Mathf.Abs(running));
+
 
         if (running > 0 && grounded)
         {
@@ -52,7 +76,9 @@ public class PlayerController : MonoBehaviour
         } else
         {
             rb.velocity = new Vector3(move * walkSpeed, rb.velocity.y, 0);
-        } 
+        }
+
+
 
         if (move > 0 && !rightDir) Flip();
         else if (move < 0 && rightDir) Flip();
