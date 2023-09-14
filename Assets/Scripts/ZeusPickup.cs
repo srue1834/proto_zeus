@@ -23,7 +23,7 @@ public class ZeusPickup : MonoBehaviour
 
         // Draw a debug line between Zeus and Bea
         Debug.DrawLine(transform.position, player.position, Color.red);
-        Debug.Log("Distance between Zeus and Bea: " + distance);
+        //Debug.Log("Distance between Zeus and Bea: " + distance);
 
 
 
