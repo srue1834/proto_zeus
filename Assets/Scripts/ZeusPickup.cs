@@ -9,6 +9,9 @@ public class ZeusPickup : MonoBehaviour
     public float interactionRadius = 5.0f;  // The distance within which Bea can interact with Zeus
     Animator zeus_anim;
 
+    public GameObject portal;
+
+
     void Start()
     {
         zeus_anim = GetComponent<Animator>();
@@ -33,6 +36,14 @@ public class ZeusPickup : MonoBehaviour
 
             // Notify all vet staff that Zeus has been picked up
             VetStaffAI.OnZeusPickedUp();
+            portal.SetActive(true);
+
         }
     }
+
+    public bool IsCarryingZeus()
+    {
+        return transform.parent == carryPosition;
+    }
+
 }
