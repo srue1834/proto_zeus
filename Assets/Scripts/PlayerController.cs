@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;  
+
 
 public class PlayerController : MonoBehaviour
 {
@@ -21,6 +23,9 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheck;
     public float jumpForce;
 
+    public bool isInCutscene = false;
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -28,12 +33,30 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rightDir = true;
         anim = GetComponent<Animator>();
-        isSitting = true;
+
+        // Check the current scene's name
+        string currentSceneName = SceneManager.GetActiveScene().name;
+
+        if (currentSceneName == "Main")  // Replace "Level1" with the exact name of your first level
+        {
+            isSitting = true;
+        }
+        else
+        {
+            isSitting = false;
+        }
 
     }
 
     private void FixedUpdate()
     {
+        //Debug.Log("isInCutscene: " + isInCutscene);
+
+        if (isInCutscene)
+        {
+            return;
+        }
+
         if (isSitting)
         {
             if (Input.GetKeyDown(KeyCode.L))

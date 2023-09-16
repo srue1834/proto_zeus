@@ -27,7 +27,7 @@ public class ZeusPickup : MonoBehaviour
 
 
 
-        if (distance <= interactionRadius && Input.GetKeyDown(KeyCode.E))
+        if (distance <= interactionRadius && Input.GetKeyDown(KeyCode.P))
         {
             // Attach Zeus to Bea's carry position
             transform.SetParent(carryPosition);
