@@ -25,6 +25,9 @@ public class PlayerController : MonoBehaviour
 
     public bool isInCutscene = false;
 
+    bool canMove = false;
+    float timeSinceSceneLoaded = 0;
+
 
 
     // Start is called before the first frame update
@@ -46,11 +49,28 @@ public class PlayerController : MonoBehaviour
             isSitting = false;
         }
 
+        canMove = false;  // Set canMove to false when the scene starts
+        timeSinceSceneLoaded = 0;  // Reset the timer
+
+    }
+
+    void Update()
+    {
+        // Update the timer
+        timeSinceSceneLoaded += Time.deltaTime;
+
+        // If more than 13.90 seconds have passed since the scene was loaded, allow the player to move
+        if (timeSinceSceneLoaded > 13.90f)
+        {
+            canMove = true;
+        }
     }
 
     private void FixedUpdate()
     {
         //Debug.Log("isInCutscene: " + isInCutscene);
+        if (!canMove)  // If the player can't move, skip the rest of the FixedUpdate logic
+            return;
 
         if (isInCutscene)
         {
