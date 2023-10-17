@@ -10,10 +10,9 @@ public class BallScript : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-
     private void OnCollisionEnter(Collision collision)
     {
-        if (!zeusFollow.IsFetchingBall && collision.gameObject.CompareTag("Ground") && BallInteraction.ballHasBeenThrown)  // Check if Zeus isn't fetching the ball.
+        if (collision.gameObject.CompareTag("Ground") && BallInteraction.ballHasBeenThrown)
         {
             rb.velocity = Vector3.zero;
             zeusFollow.BallHitGround(transform.position);

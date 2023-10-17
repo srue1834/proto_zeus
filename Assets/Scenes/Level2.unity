@@ -931,15 +931,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bea: {fileID: 2112310640}
-  followDistance: 3
+  followDistance: 4
   speed: 5
   rotationSpeed: 4
   lookaheadDistance: 1
   fetchSpeedMultiplier: 1
   incrementDistance: 0.55
   hasFetchedOnce: 0
-  ballHoldPosition: {fileID: 1205649931}
-  pickUpRadius: 2
 --- !u!4 &1961868263 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3740119073097969022, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}

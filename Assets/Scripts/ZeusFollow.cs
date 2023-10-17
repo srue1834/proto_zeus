@@ -21,17 +21,6 @@ public class ZeusFollow : MonoBehaviour
     public float incrementDistance = 1.0f; // The amount to increase the distance Zeus starts from.
     public bool hasFetchedOnce = false;
 
-    public Transform ballHoldPosition;  // The position on Zeus where the ball will be held (e.g., his mouth).
-    private GameObject fetchedBall;
-    private Rigidbody fetchedBallRb;
-    public float pickUpRadius = 1.0f;
-
-    public bool IsFetchingBall
-    {
-        get { return fetchingBall; }
-    }
-
-
 
     void Start()
     {
@@ -43,14 +32,12 @@ public class ZeusFollow : MonoBehaviour
         if (fetchingBall)
         {
             MoveTowardsBall();
-            return; // Make sure that if Zeus is fetching the ball, he doesn't execute the MoveTowardsBea logic
         }
         else
         {
             MoveTowardsBea();
         }
     }
-
 
     public void BallHitGround(Vector3 position)
     {
@@ -77,9 +64,7 @@ public class ZeusFollow : MonoBehaviour
         {
             Vector3 lookaheadPosition = bea.position + beaMovementDirection * lookaheadDistance;
             Vector3 directionToLookaheadPosition = (lookaheadPosition - transform.position).normalized;
-
             transform.position = Vector3.SmoothDamp(transform.position, transform.position + directionToLookaheadPosition, ref velocity, 0.1f, speed);
-
             directionToLookaheadPosition.y = 0;
             Quaternion desiredRotation = Quaternion.LookRotation(directionToLookaheadPosition);
             transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, rotationSpeed * Time.deltaTime);
@@ -98,53 +83,23 @@ public class ZeusFollow : MonoBehaviour
     void MoveTowardsBall()
     {
         Vector3 direction = (targetPosition - transform.position).normalized;
+        float distance = Vector3.Distance(transform.position, targetPosition);
 
-        // Check if the ball is within the pickUpRadius of Zeus
-        Collider[] colliders = Physics.OverlapSphere(transform.position, pickUpRadius);
-        bool isCloseToBall = false;
-        foreach (var collider in colliders)
+        if (distance > 1.0f)
         {
-            if (collider.CompareTag("Ball"))
-            {
-                isCloseToBall = true;
-                break;
-            }
-        }
-
-        if (!isCloseToBall)
-        {
-            Vector3 directionToBall = (targetPosition - transform.position).normalized;
-            directionToBall.y = 0; // Ensure Zeus doesn't tilt upwards or downwards
-            Quaternion desiredRotationToBall = Quaternion.LookRotation(directionToBall);
-            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotationToBall, rotationSpeed * Time.deltaTime);
-
             transform.position += direction * speed * Time.deltaTime;
             currentMovementSpeed = 1.0f;
-
         }
         else
         {
             fetchingBall = false;
             currentMovementSpeed = 0f;
-
             if (!hasFetchedOnce)
             {
-                hasFetchedOnce = true;
-
-                // Grab the ball
-                fetchedBall = GameObject.FindGameObjectWithTag("Ball");  // Assuming the ball has the tag "Ball".
-                if (fetchedBall)
-                {
-                    fetchedBallRb = fetchedBall.GetComponent<Rigidbody>();
-                    fetchedBallRb.isKinematic = true;
-                    fetchedBall.transform.SetParent(ballHoldPosition);
-                    fetchedBall.transform.position = ballHoldPosition.position;
-                }
+                hasFetchedOnce = true; // Set this flag once Zeus has fetched the ball for the first time.
             }
         }
 
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
     }
-
-   
 }
