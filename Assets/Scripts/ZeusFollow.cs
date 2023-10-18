@@ -24,12 +24,19 @@ public class ZeusFollow : MonoBehaviour
     private int fetchCounter = 0;  // New variable to track number of fetches
     private float tiredSpeedModifier = 0.5f;  // Speed reduction when tired
 
+    private float exhaustedMoveTime = 0f;
+    private float maxExhaustedMoveTime = 1.5f;  // Zeus will move for 1.5 seconds before stopping
+    private Vector3 lastWalkingDirection = Vector3.forward;  // default to forward
+
+
+
     private enum ZeusState
     {
         Fetching,
         TurningToBea,
         ReturningToBea,
-        Idle
+        Idle,
+        Exhausted
     }
 
     private ZeusState currentState = ZeusState.Idle;
@@ -54,8 +61,43 @@ public class ZeusFollow : MonoBehaviour
             case ZeusState.Idle:
                 MoveTowardsBea();
                 break;
+            case ZeusState.Exhausted:
+                MoveInExhaustedState();
+                break;
+
         }
     }
+
+    void MoveInExhaustedState()
+    {
+        if (exhaustedMoveTime >= maxExhaustedMoveTime)
+        {
+            // Zeus has moved long enough, stop him
+            currentMovementSpeed = 0f;
+            agent.isStopped = true;
+            zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
+
+            // Rotate Zeus to face his last walking direction
+            Quaternion lookRotation = Quaternion.LookRotation(lastWalkingDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
+            return;
+        }
+
+        // Otherwise, keep moving towards the ball (at half speed)
+        float currentSpeed = speed * 0.5f;
+        Vector3 directionToBall = (targetPosition - transform.position).normalized;
+        lastWalkingDirection = directionToBall;  // store the current direction
+        transform.position += directionToBall * currentSpeed * Time.deltaTime;
+
+        // Rotate Zeus to face the ball
+        Quaternion currentLookRotation = Quaternion.LookRotation(directionToBall);
+        transform.rotation = Quaternion.Slerp(transform.rotation, currentLookRotation, rotationSpeed * Time.deltaTime);
+
+        // Update the exhaustedMoveTime
+        exhaustedMoveTime += Time.deltaTime;
+    }
+
+
 
 
     void TurnTowardsBea()
@@ -75,7 +117,6 @@ public class ZeusFollow : MonoBehaviour
 
     private void PickupBall(GameObject ball)
     {
-        Debug.Log("Attempting to pick up ball: " + ball.name);
         fetchingBall = false;
         ball.transform.position = holdPosition.position;
         ball.transform.SetParent(holdPosition);
@@ -99,16 +140,28 @@ public class ZeusFollow : MonoBehaviour
 
     public void BallHitGround(Vector3 position)
     {
+        Debug.Log("Fetch counter: " + fetchCounter);
+        if (fetchCounter >= 5)
+        {
+            currentState = ZeusState.Exhausted;
+            agent.ResetPath(); // Clear the agent's destination
+            return;
+        }
+
         targetPosition = position;
         fetchingBall = true;
         agent.isStopped = false;  // Ensure the NavMeshAgent is active
-        Debug.Log("BallHitGround called. Target position: " + targetPosition);
 
         currentState = ZeusState.Fetching;
     }
 
+
+
     void MoveTowardsBea()
     {
+        if (currentState == ZeusState.Exhausted)
+            return;
+
         float distanceToBea = Vector3.Distance(transform.position, bea.position);
         Vector3 beaMovementDirection = (bea.position - lastBeaPosition).normalized;
 
@@ -155,8 +208,6 @@ public class ZeusFollow : MonoBehaviour
     void MoveTowardsBall()
     {
         float distance = Vector3.Distance(transform.position, targetPosition);
-        Debug.Log("Distance to ball: " + distance);
-
 
         // Use a smaller threshold to determine when Zeus is close enough to pick up the ball
         float pickupThreshold = 0.5f;
