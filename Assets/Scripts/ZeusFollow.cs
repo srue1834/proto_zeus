@@ -65,7 +65,6 @@ public class ZeusFollow : MonoBehaviour
             case ZeusState.Exhausted:
                 MoveInExhaustedState();
                 break;
-
         }
     }
 
@@ -75,7 +74,10 @@ public class ZeusFollow : MonoBehaviour
         {
             // Zeus has moved long enough, stop him
             currentMovementSpeed = 0f;
-            agent.isStopped = true;
+            if (agent.enabled) // Check if the agent is enabled before stopping it
+            {
+                agent.isStopped = true;
+            }
             zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
             return; // Exit the function
         }
@@ -92,9 +94,6 @@ public class ZeusFollow : MonoBehaviour
         // Update the exhaustedMoveTime
         exhaustedMoveTime += Time.deltaTime;
     }
-
-
-
 
     void TurnTowardsBea()
     {
@@ -130,7 +129,6 @@ public class ZeusFollow : MonoBehaviour
 
         currentMovementSpeed = 0f;
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
-        Debug.Log("Zeus picked up the ball!");
 
     }
 
@@ -150,8 +148,6 @@ public class ZeusFollow : MonoBehaviour
 
         currentState = ZeusState.Fetching;
     }
-
-
 
     void MoveTowardsBea()
     {
@@ -199,8 +195,6 @@ public class ZeusFollow : MonoBehaviour
         lastBeaPosition = bea.position;
     }
 
-
-
     void MoveTowardsBall()
     {
         float distance = Vector3.Distance(transform.position, targetPosition);
@@ -240,7 +234,4 @@ public class ZeusFollow : MonoBehaviour
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
 
     }
-
-
-
 }
