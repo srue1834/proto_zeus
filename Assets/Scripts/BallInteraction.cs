@@ -26,11 +26,14 @@ public class BallInteraction : MonoBehaviour
                     ball = collider.gameObject;
                     ballRb = ball.GetComponent<Rigidbody>();
                     ballRb.isKinematic = true;
-                    ball.transform.SetParent(holdPosition);
+
+                    // Unparent the ball before setting position
+                    ball.transform.SetParent(null);
                     ball.transform.position = holdPosition.position;
+
+                    // Reparent the ball after setting position
+                    ball.transform.SetParent(holdPosition);
                     break;
-
-
                 }
             }
         }
@@ -39,7 +42,10 @@ public class BallInteraction : MonoBehaviour
             if (Input.GetKeyDown(throwKey))
             {
                 ballRb.isKinematic = false;
+
+                // Unparent the ball before throwing
                 ball.transform.SetParent(null);
+
                 Vector3 throwDirection = (transform.forward + Vector3.up).normalized;
                 ballRb.AddForce(throwDirection * throwForce, ForceMode.VelocityChange);
                 ballHasBeenThrown = true;
@@ -47,4 +53,5 @@ public class BallInteraction : MonoBehaviour
             }
         }
     }
+
 }

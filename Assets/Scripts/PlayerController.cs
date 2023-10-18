@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;  
+using UnityEngine.SceneManagement;
 
 
 public class PlayerController : MonoBehaviour
@@ -116,7 +116,8 @@ public class PlayerController : MonoBehaviour
         {
             rb.velocity = new Vector3(move * runSpeed, rb.velocity.y, 0);
 
-        } else
+        }
+        else
         {
             rb.velocity = new Vector3(move * walkSpeed, rb.velocity.y, 0);
         }
@@ -132,10 +133,11 @@ public class PlayerController : MonoBehaviour
     void Flip()
     {
         rightDir = !rightDir;
-        Vector3 scale = transform.localScale;
-        scale.z *= -1;
 
-        transform.localScale = scale; // inverted scale
-
+        // Rotate around the Y-axis
+        Vector3 currentRotation = transform.eulerAngles;
+        currentRotation.y += 180;  // Add 180 degrees to the current Y rotation
+        transform.eulerAngles = currentRotation;
     }
+
 }
