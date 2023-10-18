@@ -298,7 +298,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60.000004
+  field of view: 64.5
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -324,7 +324,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 281261551}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24.732748, y: 2.47, z: -8.3}
+  m_LocalPosition: {x: -23.638256, y: 2.47, z: -8.18698}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -641,7 +641,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ad980451443d70438faac0bc6c235a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TrackedObjectOffset: {x: -1.08, y: 3.41, z: 0.7}
+  m_TrackedObjectOffset: {x: -1.08, y: 3.41, z: 2.0558388}
   m_LookaheadTime: 0.553
   m_LookaheadSmoothing: 30
   m_LookaheadIgnoreY: 0
@@ -651,7 +651,7 @@ MonoBehaviour:
   m_TargetMovementOnly: 1
   m_ScreenX: 0.54
   m_ScreenY: 0.5
-  m_CameraDistance: 9.38
+  m_CameraDistance: 9.26698
   m_DeadZoneWidth: 0
   m_DeadZoneHeight: 0
   m_DeadZoneDepth: 0
@@ -792,7 +792,7 @@ MonoBehaviour:
   m_LookAt: {fileID: 2112310640}
   m_Follow: {fileID: 2112310640}
   m_Lens:
-    FieldOfView: 60.000004
+    FieldOfView: 64.5
     OrthographicSize: 5
     NearClipPlane: 0.3
     FarClipPlane: 1000
@@ -818,7 +818,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1801045483}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24.732748, y: 2.47, z: -8.3}
+  m_LocalPosition: {x: -23.638256, y: 2.47, z: -8.18698}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1192,7 +1192,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7927311612055961769, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}
       propertyPath: m_Size.z
-      value: 0.5620745
+      value: 0.57265836
+      objectReference: {fileID: 0}
+    - target: {fileID: 7927311612055961769, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}
+      propertyPath: m_Center.x
+      value: -5.3707448e-17
       objectReference: {fileID: 0}
     - target: {fileID: 7927311612055961769, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}
       propertyPath: m_Center.y
@@ -1200,7 +1204,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7927311612055961769, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}
       propertyPath: m_Center.z
-      value: 0
+      value: -0.019404322
       objectReference: {fileID: 0}
     - target: {fileID: 7950710669229955340, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}
       propertyPath: m_Layer
@@ -1298,7 +1302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bea: {fileID: 2112310640}
-  followDistance: 4
+  followDistance: 3.6
   speed: 5
   rotationSpeed: 10
   lookaheadDistance: 1
@@ -1463,7 +1467,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5, y: 0.5, z: 0.5}
+  m_Size: {x: 0.8, y: 0.8, z: 0.8}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &1985555032
 MonoBehaviour:
