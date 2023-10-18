@@ -25,9 +25,10 @@ public class ZeusFollow : MonoBehaviour
     private float tiredSpeedModifier = 0.5f;  // Speed reduction when tired
 
     private float exhaustedMoveTime = 0f;
-    private float maxExhaustedMoveTime = 1.5f;  // Zeus will move for 1.5 seconds before stopping
+    private float maxExhaustedMoveTime = 1f;  // Zeus will move for 1.5 seconds before stopping
     private Vector3 lastWalkingDirection = Vector3.forward;  // default to forward
 
+    private bool hasTurnedAfterExhausted = false;  // Add this at the class level
 
 
     private enum ZeusState
@@ -76,17 +77,12 @@ public class ZeusFollow : MonoBehaviour
             currentMovementSpeed = 0f;
             agent.isStopped = true;
             zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
-
-            // Rotate Zeus to face his last walking direction
-            Quaternion lookRotation = Quaternion.LookRotation(lastWalkingDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
-            return;
+            return; // Exit the function
         }
 
         // Otherwise, keep moving towards the ball (at half speed)
         float currentSpeed = speed * 0.5f;
         Vector3 directionToBall = (targetPosition - transform.position).normalized;
-        lastWalkingDirection = directionToBall;  // store the current direction
         transform.position += directionToBall * currentSpeed * Time.deltaTime;
 
         // Rotate Zeus to face the ball
