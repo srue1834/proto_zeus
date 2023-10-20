@@ -4,7 +4,19 @@ using UnityEngine;
 
 public class ParallaxController : MonoBehaviour
 {
+
+    public HorizontalDir horizontalDir;
+
+    public FloatRef speedMult;
     private List<ParallaxImage> images;
+
+    public MoveType moveType;
+    [Header("Only for follow transform")]
+    public Transform transformFollow;
+    public VerticalDir verticalDir;
+
+    private float lasty;
+    private float lastx;
 
     private void Start()
     {
@@ -12,6 +24,63 @@ public class ParallaxController : MonoBehaviour
         
     }
 
+    private void FixedUpdate()
+    {
+        if (images == null) return;
+
+        if (moveType == MoveType.OverTime) MoveOverTime();
+        else if (moveType == MoveType.FollowTransform)
+        {
+            FollowTransformX();
+            FollowTransformY();
+
+        }
+
+
+    }
+
+    private void MoveOverTime()
+    {
+        if (horizontalDir == HorizontalDir.Fix) return;
+
+        foreach (var item in images)
+        {
+            item.MoveX(Time.deltaTime);
+        }
+
+    }
+
+    private void FollowTransformX()
+    {
+        if (horizontalDir == HorizontalDir.Fix) return;
+
+        float distance = lastx - transformFollow.position.x;
+        if (Mathf.Abs(distance) < 0.001f) return;
+
+        foreach (var item in images)
+        {
+            item.MoveX(distance);
+        }
+
+        lastx = transformFollow.position.x;
+
+    }
+
+    private void FollowTransformY()
+    {
+        if (verticalDir == VerticalDir.Fix) return;
+
+        float distance = lasty - transformFollow.position.y;
+        if (Mathf.Abs(distance) < 0.001f) return;
+
+        foreach (var item in images)
+        {
+            item.MoveY(distance);
+        }
+
+        lasty = transformFollow.position.y;
+
+    }
     private void InitController()
     {
         InitList(); // list is usable
@@ -19,8 +88,15 @@ public class ParallaxController : MonoBehaviour
 
         foreach (var item in images)
         {
-            item.InitImage();
+            item.InitImage(speedMult, horizontalDir, verticalDir, moveType == MoveType.FollowTransform);
         }
+        if (moveType == MoveType.FollowTransform)
+        {
+            lastx = transformFollow.position.x;
+            lasty = transformFollow.position.y;
+        }
+
+        
     }
 
 
@@ -53,5 +129,34 @@ public class ParallaxController : MonoBehaviour
         }
     }
 
+}
 
+[System.Serializable]
+public class FloatRef
+{
+    [Range(0.01f, 5)]
+    public float value = 1;
+
+
+}
+
+public enum HorizontalDir
+{
+    Fix,
+    Left,
+    Right
+}
+
+public enum MoveType
+{
+    OverTime,
+    FollowTransform
+
+}
+
+public enum VerticalDir
+{
+    Fix,
+    Up,
+    Down
 }

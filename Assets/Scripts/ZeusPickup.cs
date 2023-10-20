@@ -10,6 +10,8 @@ public class ZeusPickup : MonoBehaviour
     public float interactionRadius = 5.0f;  // The distance within which Bea can interact with Zeus
     Animator zeus_anim;
     public GameObject portal;
+    public Camera parallaxCamera; // Drag and drop the parallax camera here from the inspector
+
 
 
     void Start()
@@ -55,10 +57,41 @@ public class ZeusPickup : MonoBehaviour
                 // Notify all vet staff that Zeus has been picked up
                 VetStaffAI.OnZeusPickedUp();
                 portal.SetActive(true);
+
+                ZeusFollow zeusFollow = GetComponent<ZeusFollow>();
+                if (zeusFollow && zeusFollow.IsExhaustedAfterFifthFetch())
+                {
+                    Debug.Log("Zeus is exhausted after the fifth fetch.");
+                    ParallaxController parallaxController = FindObjectOfType<ParallaxController>();
+                    if (zeusFollow && zeusFollow.IsExhaustedAfterFifthFetch())
+                    {
+                        Debug.Log("Zeus is exhausted after the fifth fetch.");
+                        ChangeBackgroundToSad();
+                    }
+
+                    else
+                    {
+                        Debug.Log("Parallax controller not found.");
+                    }
+                }
+                else
+                {
+                    Debug.Log("Zeus is not exhausted after the fifth fetch.");
+                }
             }
         }
 
     }
+
+    private void ChangeBackgroundToSad()
+    {
+        foreach (ParallaxImage image in parallaxCamera.GetComponentsInChildren<ParallaxImage>(true))
+        {
+            image.ChangeToSadColor();
+        }
+    }
+
+
 
     public bool IsCarryingZeus()
     {

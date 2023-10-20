@@ -15,7 +15,6 @@ public class ZeusFollow : MonoBehaviour
     private float speedAdjustmentRate = 2.0f;
 
     private Vector3 targetPosition;
-    private bool fetchingBall = false;
     private Animator zeusAnimator;
 
     public Transform holdPosition;  // Place where Zeus holds the ball
@@ -27,8 +26,6 @@ public class ZeusFollow : MonoBehaviour
     private float exhaustedMoveTime = 0f;
     private float maxExhaustedMoveTime = 1f;  // Zeus will move for 1.5 seconds before stopping
     private Vector3 lastWalkingDirection = Vector3.forward;  // default to forward
-
-    private bool hasTurnedAfterExhausted = false;  // Add this at the class level
 
 
     private enum ZeusState
@@ -67,6 +64,12 @@ public class ZeusFollow : MonoBehaviour
                 break;
         }
     }
+
+    public bool IsExhaustedAfterFifthFetch()
+    {
+        return fetchCounter >= 5 && currentState == ZeusState.Exhausted;
+    }
+
 
     void MoveInExhaustedState()
     {
@@ -112,7 +115,6 @@ public class ZeusFollow : MonoBehaviour
 
     private void PickupBall(GameObject ball)
     {
-        fetchingBall = false;
         ball.transform.position = holdPosition.position;
         ball.transform.SetParent(holdPosition);
         Rigidbody ballRb = ball.GetComponent<Rigidbody>();
@@ -134,7 +136,7 @@ public class ZeusFollow : MonoBehaviour
 
     public void BallHitGround(Vector3 position)
     {
-        Debug.Log("Fetch counter: " + fetchCounter);
+        //Debug.Log("Fetch counter: " + fetchCounter);
         if (fetchCounter >= 5)
         {
             currentState = ZeusState.Exhausted;
@@ -143,7 +145,6 @@ public class ZeusFollow : MonoBehaviour
         }
 
         targetPosition = position;
-        fetchingBall = true;
         agent.isStopped = false;  // Ensure the NavMeshAgent is active
 
         currentState = ZeusState.Fetching;
