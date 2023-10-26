@@ -23,6 +23,9 @@ public class ParallaxImage : MonoBehaviour
     private bool followTransform;
     private VerticalDir vDir;
 
+    public float colorChangeDuration = 1.0f; // You can adjust this for faster/slower transitions
+
+
     public void CleanUpImage()
     {
         if (c_transforms != null)
@@ -237,15 +240,25 @@ public class ParallaxImage : MonoBehaviour
 
     public void ChangeToSadColor()
     {
-        Debug.Log("Changing color for: " + gameObject.name);
-        // Adjust these values to achieve the desired gray-blue color
         float grayValue = 0.5f;
         Color sadColor = new Color(grayValue, grayValue, grayValue + 0.2f); // slightly more blue
-        GetComponent<SpriteRenderer>().color = sadColor;
+        StartCoroutine(ChangeColorGradually(sadColor));
     }
 
 
+    public IEnumerator ChangeColorGradually(Color targetColor)
+    {
+        Color startColor = GetComponent<SpriteRenderer>().color;
+        float elapsed = 0f;
 
+        while (elapsed < colorChangeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / colorChangeDuration);
+            GetComponent<SpriteRenderer>().color = Color.Lerp(startColor, targetColor, t);
+            yield return null;
+        }
+    }
 
 }
 

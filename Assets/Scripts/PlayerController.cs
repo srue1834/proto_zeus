@@ -29,6 +29,10 @@ public class PlayerController : MonoBehaviour
     float timeSinceSceneLoaded = 0;
 
 
+    private bool isCallingZeus = false;
+
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -64,6 +68,13 @@ public class PlayerController : MonoBehaviour
         {
             canMove = true;
         }
+
+        if (Input.GetKeyDown(KeyCode.C)) // assuming you want to use 'C' key to call Zeus
+        {
+            isCallingZeus = true;
+            anim.SetTrigger("isCallingZeus");
+        }
+
     }
 
     private void FixedUpdate()
@@ -126,6 +137,12 @@ public class PlayerController : MonoBehaviour
 
         if (move > 0 && !rightDir) Flip();
         else if (move < 0 && rightDir) Flip();
+
+        if (isCallingZeus)
+        {
+            anim.ResetTrigger("isCallingZeus");
+            isCallingZeus = false;
+        }
 
     }
 

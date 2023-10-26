@@ -67,7 +67,7 @@ public class ZeusFollow : MonoBehaviour
 
     public bool IsExhaustedAfterFifthFetch()
     {
-        return fetchCounter >= 5 && currentState == ZeusState.Exhausted;
+        return fetchCounter >= 3 && currentState == ZeusState.Exhausted;
     }
 
 
@@ -82,6 +82,7 @@ public class ZeusFollow : MonoBehaviour
                 agent.isStopped = true;
             }
             zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
+
             return; // Exit the function
         }
 
@@ -96,6 +97,8 @@ public class ZeusFollow : MonoBehaviour
 
         // Update the exhaustedMoveTime
         exhaustedMoveTime += Time.deltaTime;
+
+
     }
 
     void TurnTowardsBea()
@@ -137,12 +140,14 @@ public class ZeusFollow : MonoBehaviour
     public void BallHitGround(Vector3 position)
     {
         //Debug.Log("Fetch counter: " + fetchCounter);
-        if (fetchCounter >= 5)
+        if (fetchCounter >= 3)
         {
             currentState = ZeusState.Exhausted;
+            zeusAnimator.SetBool("isFalling", true);
             agent.ResetPath(); // Clear the agent's destination
             return;
         }
+
 
         targetPosition = position;
         agent.isStopped = false;  // Ensure the NavMeshAgent is active
@@ -152,8 +157,14 @@ public class ZeusFollow : MonoBehaviour
 
     void MoveTowardsBea()
     {
+        
+
         if (currentState == ZeusState.Exhausted)
+        {
+            zeusAnimator.SetBool("isTiredIdle", true);
             return;
+        }
+
 
         float distanceToBea = Vector3.Distance(transform.position, bea.position);
         Vector3 beaMovementDirection = (bea.position - lastBeaPosition).normalized;
@@ -235,4 +246,16 @@ public class ZeusFollow : MonoBehaviour
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
 
     }
+
+    public void OnFallingAnimationEnd()
+    {
+        zeusAnimator.SetBool("isTiredIdle", true);
+    }
+
+    public void ResetAnimationParameters()
+    {
+        zeusAnimator.SetBool("isFalling", false);
+        // Any other parameters you wish to reset
+    }
+
 }

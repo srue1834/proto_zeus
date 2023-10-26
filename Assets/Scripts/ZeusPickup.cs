@@ -61,23 +61,14 @@ public class ZeusPickup : MonoBehaviour
                 ZeusFollow zeusFollow = GetComponent<ZeusFollow>();
                 if (zeusFollow && zeusFollow.IsExhaustedAfterFifthFetch())
                 {
-                    Debug.Log("Zeus is exhausted after the fifth fetch.");
                     ParallaxController parallaxController = FindObjectOfType<ParallaxController>();
                     if (zeusFollow && zeusFollow.IsExhaustedAfterFifthFetch())
                     {
-                        Debug.Log("Zeus is exhausted after the fifth fetch.");
                         ChangeBackgroundToSad();
                     }
 
-                    else
-                    {
-                        Debug.Log("Parallax controller not found.");
-                    }
                 }
-                else
-                {
-                    Debug.Log("Zeus is not exhausted after the fifth fetch.");
-                }
+                
             }
         }
 
