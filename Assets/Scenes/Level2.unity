@@ -108,7 +108,7 @@ NavMeshSettings:
     agentTypeID: 0
     agentRadius: 0.5
     agentHeight: 2
-    agentSlope: 35.6
+    agentSlope: 0.6
     agentClimb: 0.4
     ledgeDropHeight: 0
     maxJumpAcrossDistance: 0
@@ -227,11 +227,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 26799013}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -21.388718, y: 16.16, z: 1.5789474}
-  m_LocalScale: {x: 1, y: 1, z: 1.0526316}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1566200200}
+  m_Father: {fileID: 1524589414}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &26799015
@@ -246,9 +246,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fb22717d56ef4fd88c60ea3a68314aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speedX: 4
-  speedY: 1
-  spawnCount: 2
+  speedX: 1
+  speedY: 0
+  spawnCount: 3
   colorChangeDuration: 1
 --- !u!212 &26799016
 SpriteRenderer:
@@ -698,7 +698,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4034750031503485853, guid: 798c06d08b9244a7785c8cc44a964c5e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10.76
+      value: 10.85
       objectReference: {fileID: 0}
     - target: {fileID: 4034750031503485853, guid: 798c06d08b9244a7785c8cc44a964c5e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1272,7 +1272,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 281261551}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -23.250898, y: 16.66, z: -10}
+  m_LocalPosition: {x: -23.074558, y: 16.66, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2957,9 +2957,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fb22717d56ef4fd88c60ea3a68314aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speedX: 0.5
+  speedX: 1
   speedY: 0
-  spawnCount: 2
+  spawnCount: 3
   colorChangeDuration: 1
 --- !u!212 &719094561
 SpriteRenderer:
@@ -3936,7 +3936,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speedX: 1
   speedY: 0
-  spawnCount: 2
+  spawnCount: 3
   colorChangeDuration: 1
 --- !u!212 &1001240380
 SpriteRenderer:
@@ -5409,7 +5409,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1524589414
 Transform:
   m_ObjectHideFlags: 0
@@ -5424,6 +5424,7 @@ Transform:
   m_Children:
   - {fileID: 1001240378}
   - {fileID: 719094559}
+  - {fileID: 26799014}
   m_Father: {fileID: 178241317}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5439,7 +5440,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a2ab534b0d53433faf94c174c1922f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  horizontalDir: 1
+  horizontalDir: 2
   speedMult:
     value: 0.7
   moveType: 0
@@ -5645,7 +5646,6 @@ Transform:
   - {fileID: 328862691}
   - {fileID: 389669514}
   - {fileID: 1878104585}
-  - {fileID: 26799014}
   m_Father: {fileID: 178241317}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -6628,6 +6628,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -6644,7 +6651,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1801045483}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -23.250898, y: 16.66, z: -10}
+  m_LocalPosition: {x: -23.074558, y: 16.66, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6905,7 +6912,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3740119073097969022, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 13.565
+      value: 13.627
       objectReference: {fileID: 0}
     - target: {fileID: 3740119073097969022, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7243,7 +7250,8 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7927311612055961769, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3740119073097969022, guid: 05050478394ca4aa88b7d789e729dbc0, type: 3}
@@ -7629,7 +7637,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.5
+  m_Radius: 0.35
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &2044572461 stripped
 Transform:

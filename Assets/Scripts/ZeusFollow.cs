@@ -33,9 +33,17 @@ public class ZeusFollow : MonoBehaviour
         Fetching,
         TurningToBea,
         ReturningToBea,
+        SlowlyApproachingBea,
         Idle,
-        Exhausted
+        Exhausted,
+        StoppedAtBea
     }
+
+    public bool IsZeusExhausted()
+    {
+        return fetchCounter >= 3;
+    }
+
 
     private ZeusState currentState = ZeusState.Idle;
 
@@ -47,6 +55,21 @@ public class ZeusFollow : MonoBehaviour
 
     void Update()
     {
+        //Debug.Log("Zeus' current state: " + currentState.ToString());
+
+        PlayerController playerController = bea.GetComponent<PlayerController>();  // Get the PlayerController script from Bea
+        if (playerController == null)
+        {
+            Debug.LogError("Bea's PlayerController script is not found!");
+        }
+
+        // Check if Bea has called Zeus for the second time and Zeus is currently idle
+        if (playerController.GetCallCount() == 2 && (currentState == ZeusState.Idle || currentState == ZeusState.Exhausted))
+        {
+            Debug.Log("Zeus is now slowly approaching Bea.");
+            currentState = ZeusState.SlowlyApproachingBea;
+        }
+
         switch (currentState)
         {
             case ZeusState.Fetching:
@@ -56,13 +79,48 @@ public class ZeusFollow : MonoBehaviour
                 TurnTowardsBea();
                 break;
             case ZeusState.ReturningToBea:
+                MoveTowardsBea();
+                break;
+            case ZeusState.SlowlyApproachingBea:
+                SlowlyMoveTowardsBea();
+                break;
             case ZeusState.Idle:
                 MoveTowardsBea();
                 break;
             case ZeusState.Exhausted:
                 MoveInExhaustedState();
                 break;
+
+            case ZeusState.StoppedAtBea:
+                // Do nothing. Zeus simply stands still.
+                break;
         }
+    }
+
+
+    void SlowlyMoveTowardsBea()
+    {
+
+        // Ensure the agent is stopped
+        if (agent.enabled)
+        {
+            agent.isStopped = true;
+        }
+        Debug.Log("Zeus is moving towards Bea.");
+
+        float slowSpeed = speed * 0.1f;  // Adjust the factor as needed
+        Vector3 directionToBea = (bea.position - transform.position).normalized;
+        transform.position += directionToBea * slowSpeed * Time.deltaTime;
+
+        // Rotate Zeus to face Bea
+        Quaternion currentLookRotation = Quaternion.LookRotation(directionToBea);
+        transform.rotation = Quaternion.Slerp(transform.rotation, currentLookRotation, rotationSpeed * Time.deltaTime);
+
+        if (Vector3.Distance(transform.position, bea.position) < 1.0f)  // Stop moving when close enough
+        {
+            currentState = ZeusState.StoppedAtBea;
+        }
+
     }
 
     public bool IsExhaustedAfterFifthFetch()
@@ -148,7 +206,6 @@ public class ZeusFollow : MonoBehaviour
             return;
         }
 
-
         targetPosition = position;
         agent.isStopped = false;  // Ensure the NavMeshAgent is active
 
@@ -157,8 +214,6 @@ public class ZeusFollow : MonoBehaviour
 
     void MoveTowardsBea()
     {
-        
-
         if (currentState == ZeusState.Exhausted)
         {
             zeusAnimator.SetBool("isTiredIdle", true);
@@ -245,17 +300,6 @@ public class ZeusFollow : MonoBehaviour
 
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
 
-    }
-
-    public void OnFallingAnimationEnd()
-    {
-        zeusAnimator.SetBool("isTiredIdle", true);
-    }
-
-    public void ResetAnimationParameters()
-    {
-        zeusAnimator.SetBool("isFalling", false);
-        // Any other parameters you wish to reset
     }
 
 }

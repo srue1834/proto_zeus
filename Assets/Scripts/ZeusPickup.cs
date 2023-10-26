@@ -13,7 +13,6 @@ public class ZeusPickup : MonoBehaviour
     public Camera parallaxCamera; // Drag and drop the parallax camera here from the inspector
 
 
-
     void Start()
     {
         zeus_anim = GetComponent<Animator>();
@@ -28,47 +27,53 @@ public class ZeusPickup : MonoBehaviour
 
         // Continuous logging of Zeus's position and parent for debugging
 
-        if (distance <= interactionRadius && Input.GetKeyDown(KeyCode.P))
+        PlayerController playerController = player.GetComponent<PlayerController>();
+
+
+        if (distance <= interactionRadius && Input.GetKeyDown(KeyCode.P) && playerController)
         {
-            if (IsCarryingZeus())
+            // If Zeus has been called twice
+            if (playerController.GetCallCount() >= 2)
             {
-                // Drop Zeus
-                transform.SetParent(null);
-
-                // Enable NavMeshAgent
-                NavMeshAgent zeusAgent = GetComponent<NavMeshAgent>();
-                if (zeusAgent != null)
-                    zeusAgent.enabled = true;
-
-                portal.SetActive(false);
-            }
-            else
-            {
-                // Disable NavMeshAgent
-                NavMeshAgent zeusAgent = GetComponent<NavMeshAgent>();
-                if (zeusAgent != null)
-                    zeusAgent.enabled = false;
-
-                // Pick up Zeus
-                transform.position = carryPosition.position; // Explicitly set Zeus's position before setting parent
-                transform.SetParent(carryPosition);
-                transform.localRotation = Quaternion.identity;
-
-                // Notify all vet staff that Zeus has been picked up
-                VetStaffAI.OnZeusPickedUp();
-                portal.SetActive(true);
-
-                ZeusFollow zeusFollow = GetComponent<ZeusFollow>();
-                if (zeusFollow && zeusFollow.IsExhaustedAfterFifthFetch())
+                if (IsCarryingZeus())
                 {
-                    ParallaxController parallaxController = FindObjectOfType<ParallaxController>();
+                    // Drop Zeus
+                    transform.SetParent(null);
+
+                    // Enable NavMeshAgent
+                    NavMeshAgent zeusAgent = GetComponent<NavMeshAgent>();
+                    if (zeusAgent != null)
+                        zeusAgent.enabled = true;
+
+                    portal.SetActive(false);
+                }
+                else
+                {
+                    // Disable NavMeshAgent
+                    NavMeshAgent zeusAgent = GetComponent<NavMeshAgent>();
+                    if (zeusAgent != null)
+                        zeusAgent.enabled = false;
+
+                    // Pick up Zeus
+                    transform.position = carryPosition.position; // Explicitly set Zeus's position before setting parent
+                    transform.SetParent(carryPosition);
+                    transform.localRotation = Quaternion.identity;
+
+                    // Notify all vet staff that Zeus has been picked up
+                    VetStaffAI.OnZeusPickedUp();
+                    portal.SetActive(true);
+
+                    ZeusFollow zeusFollow = GetComponent<ZeusFollow>();
                     if (zeusFollow && zeusFollow.IsExhaustedAfterFifthFetch())
                     {
-                        ChangeBackgroundToSad();
-                    }
+                        ParallaxController parallaxController = FindObjectOfType<ParallaxController>();
+                        if (zeusFollow && zeusFollow.IsExhaustedAfterFifthFetch())
+                        {
+                            ChangeBackgroundToSad();
+                        }
 
+                    }
                 }
-                
             }
         }
 

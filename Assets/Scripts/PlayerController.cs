@@ -30,8 +30,12 @@ public class PlayerController : MonoBehaviour
 
 
     private bool isCallingZeus = false;
+    private int callCount = 0;
 
-
+    public int GetCallCount()
+    {
+        return callCount;
+    }
 
 
     // Start is called before the first frame update
@@ -69,11 +73,27 @@ public class PlayerController : MonoBehaviour
             canMove = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.C)) // assuming you want to use 'C' key to call Zeus
+        ZeusFollow zeusFollow = FindObjectOfType<ZeusFollow>();
+
+        if (Input.GetKeyDown(KeyCode.C) && zeusFollow && zeusFollow.IsZeusExhausted())
         {
+
             isCallingZeus = true;
-            anim.SetTrigger("isCallingZeus");
+            callCount++;
+
+            if (callCount == 1)
+            {
+                anim.SetTrigger("isCallingZeus");
+
+            }
+            else if (callCount == 2)
+            {
+                anim.SetTrigger("isCallingCryingZeus");
+            }
+
+            Debug.Log("Bea has called Zeus " + callCount + " times.");
         }
+
 
     }
 
@@ -143,6 +163,8 @@ public class PlayerController : MonoBehaviour
             anim.ResetTrigger("isCallingZeus");
             isCallingZeus = false;
         }
+
+
 
     }
 
