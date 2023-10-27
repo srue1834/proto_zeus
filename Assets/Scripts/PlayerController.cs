@@ -31,6 +31,17 @@ public class PlayerController : MonoBehaviour
 
     private bool isCallingZeus = false;
     private int callCount = 0;
+    public UIController uiController; // Reference to UIController to control prompts
+
+    private bool hasExitedRoom = false; // Flag to track if Bea has exited the room
+
+    // Variables to control prompt display delays
+    private float wakePromptTimer = 0f;
+    private float callPromptTimer = 0f;
+    private float runPromptTimer = 0f;
+    public float promptDelay = 5f; // Delay for the first time the player can perform an action
+
+
 
     public int GetCallCount()
     {
@@ -60,6 +71,7 @@ public class PlayerController : MonoBehaviour
         canMove = false;  // Set canMove to false when the scene starts
         timeSinceSceneLoaded = 0;  // Reset the timer
 
+
     }
 
     void Update()
@@ -75,23 +87,83 @@ public class PlayerController : MonoBehaviour
 
         ZeusFollow zeusFollow = FindObjectOfType<ZeusFollow>();
 
+        if (isSitting)
+        {
+            wakePromptTimer += Time.deltaTime;
+            if (wakePromptTimer > promptDelay)
+            {
+                uiController.ShowWakePrompt(true);
+            }
+        }
+        else
+        {
+            wakePromptTimer = 0f;
+            uiController.ShowWakePrompt(false);
+        }
+
+
+        if (zeusFollow && zeusFollow.IsZeusExhausted())
+        {
+            if (callCount == 0)
+            {
+                // First call logic
+                callPromptTimer += Time.deltaTime;
+                if (callPromptTimer > promptDelay)
+                {
+                    uiController.ShowCallZeusPrompt(true);
+                }
+            }
+            else if (callCount == 1)
+            {
+                // After the first call, increase the delay for the second prompt
+                callPromptTimer += Time.deltaTime;
+                if (callPromptTimer > 2 * promptDelay)
+                {
+                    uiController.ShowCallZeusPrompt(true);
+                }
+            }
+        }
+        else
+        {
+            callPromptTimer = 0f;
+            uiController.ShowCallZeusPrompt(false);
+        }
+
+        // Run Prompt Logic
+        // Assuming running is available only in the main level and after Bea exits the room
+        if (SceneManager.GetActiveScene().name == "Main" && hasExitedRoom)
+        {
+            runPromptTimer += Time.deltaTime;
+            if (runPromptTimer > promptDelay)
+            {
+                uiController.ShowRunPrompt(true);
+            }
+        }
+        else
+        {
+            runPromptTimer = 0f;
+            uiController.ShowRunPrompt(false);
+        }
+
+
         if (Input.GetKeyDown(KeyCode.C) && zeusFollow && zeusFollow.IsZeusExhausted())
         {
-
             isCallingZeus = true;
             callCount++;
+
+            // Reset callPromptTimer when Zeus is called
+            callPromptTimer = 0f;
+            uiController.ShowCallZeusPrompt(false);
 
             if (callCount == 1)
             {
                 anim.SetTrigger("isCallingZeus");
-
             }
             else if (callCount == 2)
             {
                 anim.SetTrigger("isCallingCryingZeus");
             }
 
-            Debug.Log("Bea has called Zeus " + callCount + " times.");
         }
 
 
@@ -110,10 +182,12 @@ public class PlayerController : MonoBehaviour
 
         if (isSitting)
         {
+
             if (Input.GetKeyDown(KeyCode.L))
             {
                 anim.SetTrigger("sitting");  // Replace "StandUpAnimation" with the name of your animation if different.
                 isSitting = false;
+
             }
             return;  // Skip the rest of the FixedUpdate logic if Bea is sitting.
         }
@@ -167,6 +241,11 @@ public class PlayerController : MonoBehaviour
 
 
     }
+    // Add this method to be called when Bea exits the room
+    public void OnExitRoom()
+    {
+        hasExitedRoom = true;
+    }
 
     // flip z value
     void Flip()
@@ -178,5 +257,7 @@ public class PlayerController : MonoBehaviour
         currentRotation.y += 180;  // Add 180 degrees to the current Y rotation
         transform.eulerAngles = currentRotation;
     }
+
+
 
 }

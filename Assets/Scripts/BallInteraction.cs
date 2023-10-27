@@ -11,48 +11,76 @@ public class BallInteraction : MonoBehaviour
     private GameObject ball;
     private Rigidbody ballRb;
 
-    // Static variable to track if ball has been thrown
     public static bool ballHasBeenThrown = false;
+    public UIController uiController;
+
+    private float ballPromptTimer = 0f;
+    public float firstTimePromptDelay = 2f;  // Delay for the first time
+    public float subsequentPromptDelay = 10f;  // Delay for subsequent times
+    private bool hasInteractedWithBall = false;
+    private bool isFirstInteraction = true;
 
     void Update()
     {
         if (ball == null)
         {
             Collider[] colliders = Physics.OverlapSphere(transform.position, pickUpRadius);
+            bool ballInRange = false;
             foreach (var collider in colliders)
             {
-                if (collider.CompareTag("Ball") && Input.GetKeyDown(pickUpKey))
+                if (collider.CompareTag("Ball"))
                 {
-                    ball = collider.gameObject;
-                    ballRb = ball.GetComponent<Rigidbody>();
-                    ballRb.isKinematic = true;
+                    ballInRange = true;
+                    ballPromptTimer += Time.deltaTime;
 
-                    // Unparent the ball before setting position
-                    ball.transform.SetParent(null);
-                    ball.transform.position = holdPosition.position;
+                    if ((isFirstInteraction && ballPromptTimer > firstTimePromptDelay) ||
+                        (!isFirstInteraction && ballPromptTimer > subsequentPromptDelay))
+                    {
+                        uiController.ShowPickUpBallPrompt(true);
+                    }
 
-                    // Reparent the ball after setting position
-                    ball.transform.SetParent(holdPosition);
-                    break;
+                    if (Input.GetKeyDown(pickUpKey))
+                    {
+                        ball = collider.gameObject;
+                        ballRb = ball.GetComponent<Rigidbody>();
+                        ballRb.isKinematic = true;
+                        ball.transform.SetParent(null);
+                        ball.transform.position = holdPosition.position;
+                        ball.transform.SetParent(holdPosition);
+                        hasInteractedWithBall = true;
+                        isFirstInteraction = false;
+                        ballPromptTimer = 0f;
+                        uiController.ShowPickUpBallPrompt(false);
+                        break;
+                    }
                 }
+            }
+            if (!ballInRange)
+            {
+                ballPromptTimer = 0f;
+                uiController.ShowPickUpBallPrompt(false);
             }
         }
         else
         {
+            ballPromptTimer += Time.deltaTime;
+
+            if (ballPromptTimer > subsequentPromptDelay)
+            {
+                uiController.ShowThrowBallPrompt(true);
+            }
+
             if (Input.GetKeyDown(throwKey))
             {
                 ballRb.isKinematic = false;
-
-                // Unparent the ball before throwing
                 ball.transform.SetParent(null);
-
                 Vector3 throwDirection = (transform.forward + Vector3.up).normalized;
                 ballRb.AddForce(throwDirection * throwForce, ForceMode.VelocityChange);
                 ballHasBeenThrown = true;
                 ball = null;
+                ballPromptTimer = 0f;
+                uiController.ShowThrowBallPrompt(false);
             }
         }
     }
-
 }
-

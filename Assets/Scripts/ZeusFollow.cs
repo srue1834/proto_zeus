@@ -55,7 +55,6 @@ public class ZeusFollow : MonoBehaviour
 
     void Update()
     {
-        //Debug.Log("Zeus' current state: " + currentState.ToString());
 
         PlayerController playerController = bea.GetComponent<PlayerController>();  // Get the PlayerController script from Bea
         if (playerController == null)

@@ -6,12 +6,19 @@ using UnityEngine.AI;
 public class ZeusPickup : MonoBehaviour
 {
     public Transform player;
-    public Transform carryPosition;  // The position on Bea where Zeus should be placed when carried
-    public float interactionRadius = 5.0f;  // The distance within which Bea can interact with Zeus
+    public Transform carryPosition;
+    public float interactionRadius = 5.0f;
     Animator zeus_anim;
     public GameObject portal;
-    public Camera parallaxCamera; // Drag and drop the parallax camera here from the inspector
+    public Camera parallaxCamera;
 
+    public UIController uiController;
+
+    private float pickupZeusTimer = 0f;
+    public float firstTimePickupDelay = 5f;  // Delay for the first time
+    public float subsequentPickupDelay = 10f;  // Delay for subsequent times
+    private bool hasPickedUpZeus = false;
+    private bool isFirstPickup = true;
 
     void Start()
     {
@@ -21,13 +28,30 @@ public class ZeusPickup : MonoBehaviour
     private void Update()
     {
         float distance = Vector3.Distance(transform.position, player.position);
-
-        // Draw a debug line between Zeus and Bea
-        Debug.DrawLine(transform.position, player.position, Color.red);
-
-        // Continuous logging of Zeus's position and parent for debugging
-
         PlayerController playerController = player.GetComponent<PlayerController>();
+
+        if (distance <= interactionRadius && !IsCarryingZeus() && !hasPickedUpZeus && playerController.GetCallCount() >= 2)
+        {
+            pickupZeusTimer += Time.deltaTime;
+
+            if ((isFirstPickup && pickupZeusTimer > firstTimePickupDelay) ||
+                (!isFirstPickup && pickupZeusTimer > subsequentPickupDelay))
+            {
+                uiController.ShowCarryZeusPrompt(true);
+            }
+        }
+        else
+        {
+            pickupZeusTimer = 0f;
+        }
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            hasPickedUpZeus = true;
+            isFirstPickup = false;
+            pickupZeusTimer = 0f;
+            uiController.ShowCarryZeusPrompt(false);
+        }
 
 
         if (distance <= interactionRadius && Input.GetKeyDown(KeyCode.P) && playerController)

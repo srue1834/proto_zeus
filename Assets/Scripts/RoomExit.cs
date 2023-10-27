@@ -15,6 +15,7 @@ public class RoomExit : MonoBehaviour
             {
                 // Bea is exiting the room
                 VetStaffAI.OnBeaExitedRoom();
+                player.GetComponent<PlayerController>().OnExitRoom(); // Call the OnExitRoom method
             }
             else
             {
