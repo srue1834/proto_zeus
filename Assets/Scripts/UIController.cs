@@ -10,6 +10,7 @@ public class UIController : MonoBehaviour
     public TextMeshProUGUI carryPrompt;
     public TextMeshProUGUI pickUpBallPrompt;
     public TextMeshProUGUI throwBallPrompt;
+    public TextMeshProUGUI pushPrompt;
 
     // Use these methods to show/hide prompts
     public void ShowWakePrompt(bool show) { ShowPrompt(wakePrompt, show); }
@@ -18,6 +19,7 @@ public class UIController : MonoBehaviour
     public void ShowCarryZeusPrompt(bool show) { ShowPrompt(carryPrompt, show); }
     public void ShowPickUpBallPrompt(bool show) { ShowPrompt(pickUpBallPrompt, show); }
     public void ShowThrowBallPrompt(bool show) { ShowPrompt(throwBallPrompt, show); }
+    public void ShowPushPrompt(bool show) { ShowPrompt(pushPrompt, show); }
 
     private void ShowPrompt(TextMeshProUGUI prompt, bool show)
     {

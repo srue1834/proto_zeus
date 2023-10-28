@@ -40,7 +40,12 @@ public class PlayerController : MonoBehaviour
     private float callPromptTimer = 0f;
     private float runPromptTimer = 0f;
     public float promptDelay = 5f; // Delay for the first time the player can perform an action
+    public bool shouldZeusWait = false; // Add this new variable at the top with other member variables.
 
+
+    private float originalRunSpeed;
+    private float originalWalkSpeed;
+    private bool hasRunPromptShown = false;
 
 
     public int GetCallCount()
@@ -59,7 +64,7 @@ public class PlayerController : MonoBehaviour
         // Check the current scene's name
         string currentSceneName = SceneManager.GetActiveScene().name;
 
-        if (currentSceneName == "Main")  // Replace "Level1" with the exact name of your first level
+        if (currentSceneName == "Main")  
         {
             isSitting = true;
         }
@@ -68,10 +73,19 @@ public class PlayerController : MonoBehaviour
             isSitting = false;
         }
 
-        canMove = false;  // Set canMove to false when the scene starts
+        if (SceneManager.GetActiveScene().name == "Level2")
+        {
+            canMove = false;  // Set canMove to false when the scene starts
+
+        } else
+        {
+            canMove = true;
+        }
+
         timeSinceSceneLoaded = 0;  // Reset the timer
 
-
+        originalRunSpeed = runSpeed;
+        originalWalkSpeed = walkSpeed;
     }
 
     void Update()
@@ -80,6 +94,7 @@ public class PlayerController : MonoBehaviour
         timeSinceSceneLoaded += Time.deltaTime;
 
         // If more than 13.90 seconds have passed since the scene was loaded, allow the player to move
+
         if (timeSinceSceneLoaded > 13.90f)
         {
             canMove = true;
@@ -129,24 +144,16 @@ public class PlayerController : MonoBehaviour
             uiController.ShowCallZeusPrompt(false);
         }
 
-        // Run Prompt Logic
-        // Assuming running is available only in the main level and after Bea exits the room
-        if (SceneManager.GetActiveScene().name == "Main" && hasExitedRoom)
+        if (SceneManager.GetActiveScene().name == "Main" && hasExitedRoom && !hasRunPromptShown)
         {
-            runPromptTimer += Time.deltaTime;
-            if (runPromptTimer > promptDelay)
-            {
-                uiController.ShowRunPrompt(true);
-            }
+            uiController.ShowRunPrompt(true);
+            hasRunPromptShown = true;
         }
-        else
-        {
-            runPromptTimer = 0f;
-            uiController.ShowRunPrompt(false);
-        }
+
 
 
         if (Input.GetKeyDown(KeyCode.C) && zeusFollow && zeusFollow.IsZeusExhausted())
+
         {
             isCallingZeus = true;
             callCount++;
@@ -154,17 +161,53 @@ public class PlayerController : MonoBehaviour
             // Reset callPromptTimer when Zeus is called
             callPromptTimer = 0f;
             uiController.ShowCallZeusPrompt(false);
+            anim.SetTrigger("isCallingZeus");
+            anim.SetInteger("callCount", callCount);
 
-            if (callCount == 1)
+            if (callCount == 2)
             {
-                anim.SetTrigger("isCallingZeus");
-            }
-            else if (callCount == 2)
-            {
-                anim.SetTrigger("isCallingCryingZeus");
+                shouldZeusWait = true; // Set the flag when Bea calls Zeus for the second time.
             }
 
         }
+
+        // Check if any vet staff is close to Bea
+        bool shouldSlow = false;
+        foreach (var vet in FindObjectsOfType<VetStaffAI>())
+        {
+            if (vet.ShouldSlowBea())
+            {
+                shouldSlow = true;
+                break;
+            }
+        }
+
+        if (shouldSlow)
+        {
+            Debug.Log("Slowing down Bea.");
+            SlowDown();
+
+        }
+        else
+        {
+            Debug.Log("Resetting Bea's speed.");
+            ResetSpeed();
+        }
+
+        if (shouldSlow == true)
+        {
+            uiController.ShowPushPrompt(true);
+
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            ResetSpeed();
+            uiController.ShowPushPrompt(false);
+
+
+        }
+
 
 
     }
@@ -172,7 +215,7 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         //Debug.Log("isInCutscene: " + isInCutscene);
-        if (!canMove)  // If the player can't move, skip the rest of the FixedUpdate logic
+        if (!canMove) 
             return;
 
         if (isInCutscene)
@@ -192,13 +235,6 @@ public class PlayerController : MonoBehaviour
             return;  // Skip the rest of the FixedUpdate logic if Bea is sitting.
         }
 
-
-        if (grounded && Input.GetAxis("Jump") > 0)
-        {
-            grounded = false;
-            rb.AddForce(new Vector3(0, jumpForce, 0)); // apply force in y direction
-        }
-
         // draw sphere 
         groundColls = Physics.OverlapSphere(groundCheck.position, groundRad, groundLayer);
         if (groundColls.Length > 0) grounded = true;
@@ -213,20 +249,36 @@ public class PlayerController : MonoBehaviour
             anim.SetTrigger("goIdle");  // Transition to the "idle" state when the player starts moving
         }
 
-        float running = Input.GetAxisRaw("Fire3"); // left shift
-        anim.SetFloat("speed", Mathf.Abs(running));
-
-
-        if (running > 0 && grounded)
+        if (SceneManager.GetActiveScene().name == "Main")
         {
-            rb.velocity = new Vector3(move * runSpeed, rb.velocity.y, 0);
+            float running = Input.GetAxisRaw("Fire3"); // left shift
+            anim.SetFloat("speed", Mathf.Abs(running));
+
+        
+
+
+            if (running > 0 && grounded)
+            {
+                uiController.ShowRunPrompt(false);
+
+                rb.velocity = new Vector3(move * runSpeed, rb.velocity.y, 0);
+
+            }
+            else
+            {
+                rb.velocity = new Vector3(move * walkSpeed, rb.velocity.y, 0);
+
+            }
+
+            Debug.Log("Current Velocity: " + rb.velocity);
+
 
         }
-        else
+        else if (SceneManager.GetActiveScene().name == "Level2")
         {
             rb.velocity = new Vector3(move * walkSpeed, rb.velocity.y, 0);
-        }
 
+        }
 
 
         if (move > 0 && !rightDir) Flip();
@@ -256,6 +308,23 @@ public class PlayerController : MonoBehaviour
         Vector3 currentRotation = transform.eulerAngles;
         currentRotation.y += 180;  // Add 180 degrees to the current Y rotation
         transform.eulerAngles = currentRotation;
+    }
+
+    public void EndOfCallingAnimation()
+    {
+        FindObjectOfType<ZeusFollow>().StartFollowingAfterCall();
+    }
+
+    private void SlowDown()
+    {
+        runSpeed = originalRunSpeed * 0.2f; // Reduce speed by 50%. Adjust as needed.
+        walkSpeed = originalWalkSpeed * 0.2f; // Reduce speed by 50%. Adjust as needed.
+    }
+
+    private void ResetSpeed()
+    {
+        runSpeed = originalRunSpeed;
+        walkSpeed = originalWalkSpeed;
     }
 
 

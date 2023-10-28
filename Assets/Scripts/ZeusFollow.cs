@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class ZeusFollow : MonoBehaviour
 {
@@ -36,7 +38,9 @@ public class ZeusFollow : MonoBehaviour
         SlowlyApproachingBea,
         Idle,
         Exhausted,
-        StoppedAtBea
+        StoppedAtBea,
+        WaitingForBeaCall
+
     }
 
     public bool IsZeusExhausted()
@@ -49,14 +53,38 @@ public class ZeusFollow : MonoBehaviour
 
     void Start()
     {
+
+
         zeusAnimator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
+
+        if (SceneManager.GetActiveScene().name == "Main")
+        {
+            if (agent != null)
+                agent.enabled = false;
+        }
     }
 
     void Update()
     {
+        PlayerController playerController = bea.GetComponent<PlayerController>();
 
-        PlayerController playerController = bea.GetComponent<PlayerController>();  // Get the PlayerController script from Bea
+        // Check if Bea has set the 'shouldZeusWait' flag and Zeus is currently idle
+        if (playerController.shouldZeusWait && (currentState == ZeusState.Idle || currentState == ZeusState.Exhausted))
+        {
+            currentState = ZeusState.WaitingForBeaCall;  // Change Zeus's state to waiting
+            playerController.shouldZeusWait = false; // Reset the flag.
+        }
+
+
+        //// Check if Bea has set the 'shouldZeusWait' flag and Zeus is currently idle
+        //if (playerController.shouldZeusWait && (currentState == ZeusState.Idle || currentState == ZeusState.Exhausted))
+        //{
+        //    StartCoroutine(WaitBeforeApproaching());
+        //    playerController.shouldZeusWait = false; // Reset the flag.
+        //}
+
+
         if (playerController == null)
         {
             Debug.LogError("Bea's PlayerController script is not found!");
@@ -96,6 +124,13 @@ public class ZeusFollow : MonoBehaviour
         }
     }
 
+    public void StartFollowingAfterCall()
+    {
+        if (currentState == ZeusState.WaitingForBeaCall)
+        {
+            currentState = ZeusState.SlowlyApproachingBea;
+        }
+    }
 
     void SlowlyMoveTowardsBea()
     {
@@ -299,6 +334,12 @@ public class ZeusFollow : MonoBehaviour
 
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
 
+    }
+    // New Coroutine for the delay:
+    IEnumerator WaitBeforeApproaching()
+    {
+        yield return new WaitForSeconds(10f); // Wait for 3 seconds
+        currentState = ZeusState.SlowlyApproachingBea;
     }
 
 }

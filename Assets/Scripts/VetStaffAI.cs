@@ -10,6 +10,8 @@ public class VetStaffAI : MonoBehaviour
 
     public float chaseSpeed = 4.0f;
     private bool isChasing = false;
+    public float backOffDistance = 5.0f; // Distance vet staff backs off
+
 
     void Start()
     {
@@ -42,6 +44,11 @@ public class VetStaffAI : MonoBehaviour
             // Play running animation (we'll set this up in the next step)
             vet_anim.SetBool("IsRunning", true);
         }
+
+        if (IsCloseToBea() && Input.GetKeyDown(KeyCode.Space))
+        {
+            BackOff();
+        }
     }
 
     public static void OnZeusPickedUp()
@@ -64,4 +71,29 @@ public class VetStaffAI : MonoBehaviour
             vet.isChasing = true;
         }
     }
+
+    private bool IsCloseToBea()
+    {
+        float distance = Vector3.Distance(transform.position, player.position);
+        return distance <= 1.0f; // Adjust this value as needed
+    }
+
+
+    private void BackOff()
+    {
+        Vector3 directionAwayFromBea = (transform.position - player.position).normalized;
+        transform.position += directionAwayFromBea * backOffDistance;
+    }
+
+    public bool ShouldSlowBea()
+    {
+        bool close = IsCloseToBea();
+        if (close)
+        {
+            Debug.Log("Vet staff is close to Bea.");
+        }
+        return close;
+    }
+
+
 }

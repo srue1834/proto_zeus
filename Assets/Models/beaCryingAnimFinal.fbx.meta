@@ -56,11 +56,18 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.9952724
+        functionName: EndOfCallingAnimation
+        data: 
+        objectReferenceParameter: {fileID: 489859161760408770, guid: abd47a71a9a0640ee893149c964bb6de, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
+      additiveReferencePoseFrame: 238
     - serializedVersion: 16
       name: bea_calling_to_cry
       takeName: bea_calling_to_cry
@@ -91,7 +98,7 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: bea_sob
+      name: bea_cry
       takeName: bea_sob
       internalID: -5563141424248229477
       firstFrame: 0
