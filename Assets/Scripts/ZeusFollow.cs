@@ -29,6 +29,13 @@ public class ZeusFollow : MonoBehaviour
     private float maxExhaustedMoveTime = 1f;  // Zeus will move for 1.5 seconds before stopping
     private Vector3 lastWalkingDirection = Vector3.forward;  // default to forward
 
+    [Header("Sound")]
+    public AudioSource zeusAudioSource; // Reference to Zeus's AudioSource
+    public AudioClip pantingClip;       // Panting sound
+    public AudioClip snoringClip;       // Snoring sound
+
+    private bool startedSnoring = false;  // New flag to track if snoring sound has started
+
 
     private enum ZeusState
     {
@@ -54,7 +61,6 @@ public class ZeusFollow : MonoBehaviour
     void Start()
     {
 
-
         zeusAnimator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
 
@@ -63,6 +69,15 @@ public class ZeusFollow : MonoBehaviour
             if (agent != null)
                 agent.enabled = false;
         }
+        else
+        {
+            // Initialize audio source
+        if (zeusAudioSource == null)
+        {
+            zeusAudioSource = GetComponent<AudioSource>();
+        }
+        }
+        
     }
 
     void Update()
@@ -85,15 +100,9 @@ public class ZeusFollow : MonoBehaviour
         //}
 
 
-        if (playerController == null)
-        {
-            Debug.LogError("Bea's PlayerController script is not found!");
-        }
-
         // Check if Bea has called Zeus for the second time and Zeus is currently idle
         if (playerController.GetCallCount() == 2 && (currentState == ZeusState.Idle || currentState == ZeusState.Exhausted))
         {
-            Debug.Log("Zeus is now slowly approaching Bea.");
             currentState = ZeusState.SlowlyApproachingBea;
         }
 
@@ -101,6 +110,10 @@ public class ZeusFollow : MonoBehaviour
         {
             case ZeusState.Fetching:
                 MoveTowardsBall();
+                if (fetchCounter == 2 && !zeusAudioSource.isPlaying)
+                {
+                    PlaySound(pantingClip);
+                }
                 break;
             case ZeusState.TurningToBea:
                 TurnTowardsBea();
@@ -110,18 +123,35 @@ public class ZeusFollow : MonoBehaviour
                 break;
             case ZeusState.SlowlyApproachingBea:
                 SlowlyMoveTowardsBea();
+                if (zeusAudioSource.isPlaying)
+                {
+                    PlaySound(pantingClip);
+                }
                 break;
             case ZeusState.Idle:
                 MoveTowardsBea();
                 break;
             case ZeusState.Exhausted:
                 MoveInExhaustedState();
+                //if (zeusAudioSource.isPlaying)
+                //{
+                //    PlaySound(snoringClip);
+                //}
                 break;
 
             case ZeusState.StoppedAtBea:
                 // Do nothing. Zeus simply stands still.
                 break;
         }
+    }
+    private void PlaySound(AudioClip clip)
+    {
+        if (zeusAudioSource.isPlaying)
+        {
+            zeusAudioSource.Stop();
+        }
+        zeusAudioSource.clip = clip;
+        zeusAudioSource.Play();
     }
 
     public void StartFollowingAfterCall()
@@ -139,8 +169,14 @@ public class ZeusFollow : MonoBehaviour
         if (agent.enabled)
         {
             agent.isStopped = true;
+            Debug.Log("BEFORE MUSIC");
+
+            if (!zeusAudioSource.isPlaying)
+            {
+                Debug.Log("MUSIC");
+                PlaySound(snoringClip);
+            }
         }
-        Debug.Log("Zeus is moving towards Bea.");
 
         float slowSpeed = speed * 0.1f;  // Adjust the factor as needed
         Vector3 directionToBea = (bea.position - transform.position).normalized;
@@ -231,7 +267,6 @@ public class ZeusFollow : MonoBehaviour
 
     public void BallHitGround(Vector3 position)
     {
-        //Debug.Log("Fetch counter: " + fetchCounter);
         if (fetchCounter >= 3)
         {
             currentState = ZeusState.Exhausted;

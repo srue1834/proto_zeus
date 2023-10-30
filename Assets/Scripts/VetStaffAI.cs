@@ -88,10 +88,6 @@ public class VetStaffAI : MonoBehaviour
     public bool ShouldSlowBea()
     {
         bool close = IsCloseToBea();
-        if (close)
-        {
-            Debug.Log("Vet staff is close to Bea.");
-        }
         return close;
     }
 

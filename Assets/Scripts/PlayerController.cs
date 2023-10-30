@@ -184,13 +184,11 @@ public class PlayerController : MonoBehaviour
 
         if (shouldSlow)
         {
-            Debug.Log("Slowing down Bea.");
             SlowDown();
 
         }
         else
         {
-            Debug.Log("Resetting Bea's speed.");
             ResetSpeed();
         }
 
@@ -214,7 +212,6 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //Debug.Log("isInCutscene: " + isInCutscene);
         if (!canMove) 
             return;
 
@@ -254,9 +251,6 @@ public class PlayerController : MonoBehaviour
             float running = Input.GetAxisRaw("Fire3"); // left shift
             anim.SetFloat("speed", Mathf.Abs(running));
 
-        
-
-
             if (running > 0 && grounded)
             {
                 uiController.ShowRunPrompt(false);
@@ -270,10 +264,8 @@ public class PlayerController : MonoBehaviour
 
             }
 
-            Debug.Log("Current Velocity: " + rb.velocity);
-
-
         }
+
         else if (SceneManager.GetActiveScene().name == "Level2")
         {
             rb.velocity = new Vector3(move * walkSpeed, rb.velocity.y, 0);
