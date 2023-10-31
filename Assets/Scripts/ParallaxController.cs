@@ -4,132 +4,75 @@ using UnityEngine;
 
 public class ParallaxController : MonoBehaviour
 {
-
-    public HorizontalDir horizontalDir;
+    public HorizontalDir horizontalDir = HorizontalDir.Fix;
+    public VerticalDir verticalDir = VerticalDir.Fix;
 
     public FloatRef speedMult;
-    private List<ParallaxImage> images;
+    private List<ParallaxImage> parallaxImages;
 
-    public MoveType moveType;
-    [Header("Only for follow transform")]
+    public MoveType moveType = MoveType.OverTime;
     public Transform transformFollow;
-    public VerticalDir verticalDir;
 
-    private float lasty;
-    private float lastx;
+    private Vector3 lastPosition;
 
     private void Start()
     {
-        InitController();
-        
+        parallaxImages = new List<ParallaxImage>(GetComponentsInChildren<ParallaxImage>());
+        lastPosition = transformFollow.position;
+
+        foreach (var image in parallaxImages)
+        {
+            image.InitImage(speedMult, horizontalDir, verticalDir, moveType == MoveType.FollowTransform);
+        }
     }
 
     private void FixedUpdate()
     {
-        if (images == null) return;
-
-        if (moveType == MoveType.OverTime) MoveOverTime();
+        if (moveType == MoveType.OverTime)
+        {
+            MoveOverTime();
+        }
         else if (moveType == MoveType.FollowTransform)
         {
-            FollowTransformX();
-            FollowTransformY();
-
+            FollowTransform();
         }
-
-
     }
 
     private void MoveOverTime()
     {
         if (horizontalDir == HorizontalDir.Fix) return;
 
-        foreach (var item in images)
+        float distanceMoved = Time.deltaTime * speedMult.value;
+        foreach (var image in parallaxImages)
         {
-            item.MoveX(Time.deltaTime);
+            image.MoveX(distanceMoved);
         }
-
     }
 
-    private void FollowTransformX()
+    private void FollowTransform()
     {
-        if (horizontalDir == HorizontalDir.Fix) return;
+        Vector3 delta = transformFollow.position - lastPosition;
 
-        float distance = lastx - transformFollow.position.x;
-        if (Mathf.Abs(distance) < 0.001f) return;
-
-        foreach (var item in images)
+        if (horizontalDir != HorizontalDir.Fix)
         {
-            item.MoveX(distance);
-        }
-
-        lastx = transformFollow.position.x;
-
-    }
-
-    private void FollowTransformY()
-    {
-        if (verticalDir == VerticalDir.Fix) return;
-
-        float distance = lasty - transformFollow.position.y;
-        if (Mathf.Abs(distance) < 0.001f) return;
-
-        foreach (var item in images)
-        {
-            item.MoveY(distance);
-        }
-
-        lasty = transformFollow.position.y;
-
-    }
-    private void InitController()
-    {
-        InitList(); // list is usable
-        ScanForImages();
-
-        foreach (var item in images)
-        {
-            item.InitImage(speedMult, horizontalDir, verticalDir, moveType == MoveType.FollowTransform);
-        }
-        if (moveType == MoveType.FollowTransform)
-        {
-            lastx = transformFollow.position.x;
-            lasty = transformFollow.position.y;
-        }
-
-        
-    }
-
-
-
-    private void InitList()
-    {
-        if (images == null) images = new List<ParallaxImage>();
-        else
-        {
-            foreach (var item in images)
+            foreach (var image in parallaxImages)
             {
-                item.CleanUpImage();
-            }
-            images.Clear();
-        }
-
-    }
-
-    private void ScanForImages()
-    {
-        ParallaxImage pi;
-        foreach (Transform child in transform)
-        {
-            if (child.gameObject.activeSelf)
-            {
-                pi = child.GetComponent<ParallaxImage>();
-
-                if (pi != null) images.Add(pi);
+                image.MoveX(delta.x);
             }
         }
-    }
 
+        if (verticalDir != VerticalDir.Fix)
+        {
+            foreach (var image in parallaxImages)
+            {
+                image.MoveY(delta.y);
+            }
+        }
+
+        lastPosition = transformFollow.position;
+    }
 }
+
 
 [System.Serializable]
 public class FloatRef

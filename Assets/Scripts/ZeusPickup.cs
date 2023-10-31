@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public class ZeusPickup : MonoBehaviour
@@ -15,14 +16,23 @@ public class ZeusPickup : MonoBehaviour
 
     public UIController uiController;
 
+
     private float pickupZeusTimer = 0f;
-    public float firstTimePickupDelay = 5f;  // Delay for the first time
-    public float subsequentPickupDelay = 10f;  // Delay for subsequent times
+    public float firstTimePickupDelay = 1f;  // Delay for the first time
+    public float subsequentPickupDelay = 1f;  // Delay for subsequent times
     private bool hasPickedUpZeus = false;
     private bool isFirstPickup = true;
 
+    public ParticleSystem portalDissolveParticles;
+    Animator anim;
+
+    public Volume coldToneVolume;
+
+
+
     void Start()
     {
+        anim = player.GetComponent<Animator>();
         zeus_anim = GetComponent<Animator>();
         string currentSceneName = SceneManager.GetActiveScene().name;
 
@@ -32,14 +42,20 @@ public class ZeusPickup : MonoBehaviour
             if (zeusAgent != null)
                 zeusAgent.enabled = false;
         }
+
+        // Initially, we assume the scene starts with the normal tone, so disable the cold tone volume
+        if (coldToneVolume != null)
+        {
+            coldToneVolume.enabled = false;
+        }
     }
 
-   
+
     private void Update()
     {
-
         float distance = Vector3.Distance(transform.position, player.position);
         PlayerController playerController = player.GetComponent<PlayerController>();
+        ZeusFollow zeusFollow = FindObjectOfType<ZeusFollow>(); // Get the ZeusFollow component
 
         if (SceneManager.GetActiveScene().name == "Main")
         {
@@ -63,7 +79,8 @@ public class ZeusPickup : MonoBehaviour
                     // Drop Zeus
                     transform.SetParent(null);
                     portal.SetActive(false);
-                   
+                    portalDissolveParticles.Stop();
+                    anim.SetFloat("IsCarryingZeus", 0f); // For false
                 }
                 else
                 {
@@ -72,27 +89,25 @@ public class ZeusPickup : MonoBehaviour
                     transform.SetParent(carryPosition);
                     transform.localRotation = Quaternion.identity;
                     portal.SetActive(true);
+                    portalDissolveParticles.Play();
+                    anim.SetFloat("IsCarryingZeus", 1f); // For true
                 }
                 uiController.ShowCarryZeusPrompt(false);
-
             }
-
-        } else
+        }
+        else if (SceneManager.GetActiveScene().name == "Level2")
         {
-            if (distance <= interactionRadius && !IsCarryingZeus() && !hasPickedUpZeus && playerController.GetCallCount() >= 2)
+            // Check if Zeus is currently in the StoppedAtBea state and Bea has called Zeus twice
+            if (distance <= interactionRadius && !IsCarryingZeus() && !hasPickedUpZeus && playerController.GetCallCount() >= 2 && zeusFollow.CurrentState == ZeusFollow.ZeusState.StoppedAtBea)
             {
                 pickupZeusTimer += Time.deltaTime;
-
-                if ((isFirstPickup && pickupZeusTimer > firstTimePickupDelay) ||
-                    (!isFirstPickup && pickupZeusTimer > subsequentPickupDelay))
-                {
-                    uiController.ShowCarryZeusPrompt(true);
-                }
+                uiController.ShowCarryZeusPrompt(true);
+                
             }
-
             else
             {
                 pickupZeusTimer = 0f;
+                uiController.ShowCarryZeusPrompt(false);
             }
 
             if (Input.GetKeyDown(KeyCode.P))
@@ -112,56 +127,44 @@ public class ZeusPickup : MonoBehaviour
                     {
                         // Drop Zeus
                         transform.SetParent(null);
-
                         // Enable NavMeshAgent
                         NavMeshAgent zeusAgent = GetComponent<NavMeshAgent>();
                         if (zeusAgent != null)
                             zeusAgent.enabled = true;
 
                         portal.SetActive(false);
+
+                        // Disable the cold tone PPV when Zeus is dropped
+                        if (coldToneVolume != null)
+                        {
+                            coldToneVolume.enabled = false;
+                        }
                     }
                     else
                     {
-                        // Disable NavMeshAgent
-                        NavMeshAgent zeusAgent = GetComponent<NavMeshAgent>();
-                        if (zeusAgent != null)
-                            zeusAgent.enabled = false;
-
+                        
                         // Pick up Zeus
                         transform.position = carryPosition.position; // Explicitly set Zeus's position before setting parent
                         transform.SetParent(carryPosition);
                         transform.localRotation = Quaternion.identity;
 
-                        // Notify all vet staff that Zeus has been picked up
-                        VetStaffAI.OnZeusPickedUp();
+                        // Disable NavMeshAgent
+                        NavMeshAgent zeusAgent = GetComponent<NavMeshAgent>();
+                        if (zeusAgent != null)
+                            zeusAgent.enabled = false;
+
                         portal.SetActive(true);
 
-
-                        ZeusFollow zeusFollow = GetComponent<ZeusFollow>();
-                        if (zeusFollow && zeusFollow.IsExhaustedAfterFifthFetch())
+                        // Enable the cold tone PPV when Zeus is picked up
+                        if (coldToneVolume != null)
                         {
-                            ParallaxController parallaxController = FindObjectOfType<ParallaxController>();
-                            if (zeusFollow && zeusFollow.IsExhaustedAfterFifthFetch())
-                            {
-                                ChangeBackgroundToSad();
-                            }
-
+                            coldToneVolume.enabled = true;
                         }
                     }
                 }
             }
         }
     }
-
-    private void ChangeBackgroundToSad()
-    {
-        foreach (ParallaxImage image in parallaxCamera.GetComponentsInChildren<ParallaxImage>(true))
-        {
-            image.ChangeToSadColor();
-        }
-    }
-
-
 
     public bool IsCarryingZeus()
     {

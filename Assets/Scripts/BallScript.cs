@@ -1,13 +1,24 @@
 using UnityEngine;
 
+[RequireComponent(typeof(SphereCollider))]
+
 public class BallScript : MonoBehaviour
 {
     private Rigidbody rb;
     public ZeusFollow zeusFollow;
+    private SphereCollider ballCollider;
+
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        ballCollider = GetComponent<SphereCollider>();
+    }
+
+    public void SetColliderRadius(float radius)
+    {
+        Debug.Log("Setting ball collider radius to: " + radius);
+        ballCollider.radius = radius;
     }
 
     private void OnCollisionEnter(Collision collision)

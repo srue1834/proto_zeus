@@ -38,14 +38,16 @@ public class PlayerController : MonoBehaviour
     // Variables to control prompt display delays
     private float wakePromptTimer = 0f;
     private float callPromptTimer = 0f;
-    private float runPromptTimer = 0f;
-    public float promptDelay = 5f; // Delay for the first time the player can perform an action
+    public float promptDelay = 1f; // Delay for the first time the player can perform an action
     public bool shouldZeusWait = false; // Add this new variable at the top with other member variables.
 
 
     private float originalRunSpeed;
     private float originalWalkSpeed;
     private bool hasRunPromptShown = false;
+
+    private float timeSinceZeusStopped = 0f;
+    public bool IsCallPromptActive { get; private set; } = false;
 
 
     public int GetCallCount()
@@ -117,32 +119,49 @@ public class PlayerController : MonoBehaviour
         }
 
 
+        // Check if Zeus is exhausted
         if (zeusFollow && zeusFollow.IsZeusExhausted())
         {
-            if (callCount == 0)
+            // Increment the timer
+            timeSinceZeusStopped += Time.deltaTime;
+
+            // If more than 5 seconds have passed since Zeus stopped and the ball has been thrown 4 times
+            if (timeSinceZeusStopped > 2f && BallInteraction.ballThrowCount >= 4)
             {
-                // First call logic
-                callPromptTimer += Time.deltaTime;
-                if (callPromptTimer > promptDelay)
+                if (callCount == 0)
                 {
-                    uiController.ShowCallZeusPrompt(true);
+                    // First call logic
+                    callPromptTimer += Time.deltaTime;
+                    if (callPromptTimer > promptDelay)
+                    {
+                        uiController.ShowCallZeusPrompt(true);
+                        IsCallPromptActive = true;
+
+                    }
                 }
-            }
-            else if (callCount == 1)
-            {
-                // After the first call, increase the delay for the second prompt
-                callPromptTimer += Time.deltaTime;
-                if (callPromptTimer > 2 * promptDelay)
+                else if (callCount == 1)
                 {
-                    uiController.ShowCallZeusPrompt(true);
+                    // After the first call, increase the delay for the second prompt
+                    callPromptTimer += Time.deltaTime;
+                    if (callPromptTimer > 2 * promptDelay)
+                    {
+                        uiController.ShowCallZeusPrompt(true);
+                        IsCallPromptActive = true;
+
+                    }
                 }
             }
         }
         else
         {
+            // Reset the timer if Zeus is not exhausted
+            timeSinceZeusStopped = 0f;
             callPromptTimer = 0f;
             uiController.ShowCallZeusPrompt(false);
+            //IsCallPromptActive = false;
+
         }
+
 
         if (SceneManager.GetActiveScene().name == "Main" && hasExitedRoom && !hasRunPromptShown)
         {
@@ -170,6 +189,8 @@ public class PlayerController : MonoBehaviour
             }
 
         }
+
+
 
         // Check if any vet staff is close to Bea
         bool shouldSlow = false;
@@ -203,7 +224,6 @@ public class PlayerController : MonoBehaviour
             ResetSpeed();
             uiController.ShowPushPrompt(false);
 
-
         }
 
 
@@ -212,79 +232,86 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!canMove) 
+        if (!canMove || isInCutscene)
             return;
-
-        if (isInCutscene)
-        {
-            return;
-        }
 
         if (isSitting)
         {
-
             if (Input.GetKeyDown(KeyCode.L))
             {
-                anim.SetTrigger("sitting");  // Replace "StandUpAnimation" with the name of your animation if different.
+                anim.SetTrigger("sitting");
                 isSitting = false;
-
             }
-            return;  // Skip the rest of the FixedUpdate logic if Bea is sitting.
+            return;  // If Bea is sitting, skip the rest of the FixedUpdate logic.
         }
-
-        // draw sphere 
-        groundColls = Physics.OverlapSphere(groundCheck.position, groundRad, groundLayer);
-        if (groundColls.Length > 0) grounded = true;
-        else grounded = false;
-
-
-        float move = Input.GetAxis("Horizontal"); // a, d key
-        anim.SetFloat("walk_speed", Mathf.Abs(move));
 
         if (isSitting == false)
         {
             anim.SetTrigger("goIdle");  // Transition to the "idle" state when the player starts moving
         }
 
+
+        // Check for grounding
+        groundColls = Physics.OverlapSphere(groundCheck.position, groundRad, groundLayer);
+        grounded = groundColls.Length > 0;
+
+        float move = Input.GetAxis("Horizontal"); // a, d key
+        float speed = 0f; // Initialize speed to 0
+
         if (SceneManager.GetActiveScene().name == "Main")
         {
             float running = Input.GetAxisRaw("Fire3"); // left shift
-            anim.SetFloat("speed", Mathf.Abs(running));
-
             if (running > 0 && grounded)
             {
+                speed = 2f; // Assuming 2 represents running in your blend tree
                 uiController.ShowRunPrompt(false);
-
-                rb.velocity = new Vector3(move * runSpeed, rb.velocity.y, 0);
-
             }
             else
             {
-                rb.velocity = new Vector3(move * walkSpeed, rb.velocity.y, 0);
-
+                speed = 1f; // Assuming 1 represents walking in your blend tree
             }
-
         }
-
         else if (SceneManager.GetActiveScene().name == "Level2")
         {
-            rb.velocity = new Vector3(move * walkSpeed, rb.velocity.y, 0);
-
+            speed = 1f; // Assuming 1 represents walking in your blend tree for Level 2
         }
 
+        // Set the speed parameter in the Animator
+        anim.SetFloat("speed", Mathf.Abs(move) * speed);
 
+        // Update Rigidbody's velocity
+        rb.velocity = new Vector3(move * (speed == 2f ? runSpeed : walkSpeed), rb.velocity.y, 0);
+
+        // Flip character direction based on movement direction
         if (move > 0 && !rightDir) Flip();
         else if (move < 0 && rightDir) Flip();
 
+        // Check if Bea is calling Zeus
         if (isCallingZeus)
         {
             anim.ResetTrigger("isCallingZeus");
             isCallingZeus = false;
         }
 
+        // Set the IsCarryingZeus parameter in the Animator
+        ZeusPickup zeusPickup = FindObjectOfType<ZeusPickup>();
+        if (zeusPickup != null)
+        {
+            bool isCarrying = zeusPickup.IsCarryingZeus();
 
+            anim.SetFloat("IsCarryingZeus", zeusPickup.IsCarryingZeus() ? 1f : 0f);
 
+            // If Bea is holding Zeus but not moving, trigger the "idle holding" animation
+            if (isCarrying && Mathf.Approximately(move, 0f))
+            {
+                anim.SetTrigger("goIdleHolding");
+            }
+
+        }
     }
+
+
+
     // Add this method to be called when Bea exits the room
     public void OnExitRoom()
     {

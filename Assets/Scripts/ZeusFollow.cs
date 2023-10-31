@@ -36,8 +36,14 @@ public class ZeusFollow : MonoBehaviour
 
     private bool startedSnoring = false;  // New flag to track if snoring sound has started
 
+    private bool hasStartedWaitCoroutine = false; // Add this at the class level
 
-    private enum ZeusState
+    private float timeNearBall = 0f;  // Add this at the class level to track time spent near the ball
+    private float stuckThreshold = 1.5f;  // Time in seconds Zeus needs to be close to the ball before we consider him stuck
+
+
+    
+    public enum ZeusState
     {
         Fetching,
         TurningToBea,
@@ -47,12 +53,22 @@ public class ZeusFollow : MonoBehaviour
         Exhausted,
         StoppedAtBea,
         WaitingForBeaCall
-
     }
+
 
     public bool IsZeusExhausted()
     {
         return fetchCounter >= 3;
+    }
+
+    public int GetFetchCount()
+    {
+        return fetchCounter;
+    }
+
+    public ZeusState CurrentState
+    {
+        get { return currentState; }
     }
 
 
@@ -91,21 +107,6 @@ public class ZeusFollow : MonoBehaviour
             playerController.shouldZeusWait = false; // Reset the flag.
         }
 
-
-        //// Check if Bea has set the 'shouldZeusWait' flag and Zeus is currently idle
-        //if (playerController.shouldZeusWait && (currentState == ZeusState.Idle || currentState == ZeusState.Exhausted))
-        //{
-        //    StartCoroutine(WaitBeforeApproaching());
-        //    playerController.shouldZeusWait = false; // Reset the flag.
-        //}
-
-
-        // Check if Bea has called Zeus for the second time and Zeus is currently idle
-        if (playerController.GetCallCount() == 2 && (currentState == ZeusState.Idle || currentState == ZeusState.Exhausted))
-        {
-            currentState = ZeusState.SlowlyApproachingBea;
-        }
-
         switch (currentState)
         {
             case ZeusState.Fetching:
@@ -133,10 +134,10 @@ public class ZeusFollow : MonoBehaviour
                 break;
             case ZeusState.Exhausted:
                 MoveInExhaustedState();
-                //if (zeusAudioSource.isPlaying)
-                //{
-                //    PlaySound(snoringClip);
-                //}
+                if (zeusAudioSource.isPlaying)
+                {
+                    PlaySound(snoringClip);
+                }
                 break;
 
             case ZeusState.StoppedAtBea:
@@ -158,22 +159,21 @@ public class ZeusFollow : MonoBehaviour
     {
         if (currentState == ZeusState.WaitingForBeaCall)
         {
-            currentState = ZeusState.SlowlyApproachingBea;
+            StartCoroutine(WaitBeforeApproaching());
         }
     }
 
     void SlowlyMoveTowardsBea()
     {
 
+
         // Ensure the agent is stopped
         if (agent.enabled)
         {
             agent.isStopped = true;
-            Debug.Log("BEFORE MUSIC");
 
             if (!zeusAudioSource.isPlaying)
             {
-                Debug.Log("MUSIC");
                 PlaySound(snoringClip);
             }
         }
@@ -190,6 +190,7 @@ public class ZeusFollow : MonoBehaviour
         {
             currentState = ZeusState.StoppedAtBea;
         }
+
 
     }
 
@@ -263,7 +264,17 @@ public class ZeusFollow : MonoBehaviour
         currentMovementSpeed = 0f;
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
 
+        // Zeus has picked up the ball.
+        // Set the ball's collider radius back to 3.5.
+        BallScript ballScript = ball.GetComponent<BallScript>();
+        if (ballScript != null)
+        {
+            ballScript.SetColliderRadius(0.35f);
+        }
     }
+
+
+
 
     public void BallHitGround(Vector3 position)
     {
@@ -336,10 +347,18 @@ public class ZeusFollow : MonoBehaviour
         float distance = Vector3.Distance(transform.position, targetPosition);
 
         // Use a smaller threshold to determine when Zeus is close enough to pick up the ball
-        float pickupThreshold = 0.5f;
+        float pickupThreshold = 0.4f;
 
         if (distance > pickupThreshold)
         {
+            // If Zeus is moving towards the ball, ensure the ball's collider radius is set to 0 to prevent him from getting stuck
+            GameObject ballObject = GameObject.FindGameObjectWithTag("Ball");
+            BallScript ballScript = ballObject.GetComponent<BallScript>();
+            if (ballScript != null)
+            {
+                ballScript.SetColliderRadius(0.1f);
+            }
+
             // Adjust Zeus's speed if he is tired (i.e., after fetching twice)
             float currentSpeed = speed;
             if (fetchCounter >= 2)
@@ -368,12 +387,15 @@ public class ZeusFollow : MonoBehaviour
         }
 
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
-
     }
+
+
+
     // New Coroutine for the delay:
     IEnumerator WaitBeforeApproaching()
     {
-        yield return new WaitForSeconds(10f); // Wait for 3 seconds
+
+        yield return new WaitForSeconds(5f); // Wait for 3 seconds
         currentState = ZeusState.SlowlyApproachingBea;
     }
 

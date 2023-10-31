@@ -72,7 +72,7 @@ ModelImporter:
       name: bea_calling_to_cry
       takeName: bea_calling_to_cry
       internalID: 8213427045963075277
-      firstFrame: 0
+      firstFrame: 274
       lastFrame: 349
       wrapMode: 0
       orientationOffsetY: 0
@@ -80,7 +80,7 @@ ModelImporter:
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 0
+      loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0

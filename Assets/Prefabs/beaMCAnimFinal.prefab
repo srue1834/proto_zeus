@@ -2189,6 +2189,10 @@ MonoBehaviour:
     m_Bits: 64
   groundCheck: {fileID: 5139387677941231782}
   jumpForce: 120
+  isInCutscene: 0
+  uiController: {fileID: 0}
+  promptDelay: 5
+  shouldZeusWait: 0
 --- !u!54 &1944466273501205505
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2252,7 +2256,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 1e44a81599cdf40f88838a45ee84b6d5, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_WarningMessage: 

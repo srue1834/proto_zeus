@@ -12,10 +12,12 @@ public class VetStaffAI : MonoBehaviour
     private bool isChasing = false;
     public float backOffDistance = 5.0f; // Distance vet staff backs off
 
+    private Rigidbody rb; // Reference to the Rigidbody component
 
     void Start()
     {
         vet_anim = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>(); // Initialize the Rigidbody reference
     }
 
     private void Update()
@@ -78,11 +80,13 @@ public class VetStaffAI : MonoBehaviour
         return distance <= 1.0f; // Adjust this value as needed
     }
 
-
     private void BackOff()
     {
-        Vector3 directionAwayFromBea = (transform.position - player.position).normalized;
-        transform.position += directionAwayFromBea * backOffDistance;
+        if (rb != null)
+        {
+            Vector3 pushDirection = (transform.position - player.position).normalized;
+            rb.AddForce(pushDirection * 1000);  // 500 is the push force, adjust as needed
+        }
     }
 
     public bool ShouldSlowBea()
@@ -90,6 +94,4 @@ public class VetStaffAI : MonoBehaviour
         bool close = IsCloseToBea();
         return close;
     }
-
-
 }

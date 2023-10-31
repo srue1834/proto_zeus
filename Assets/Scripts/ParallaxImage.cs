@@ -1,17 +1,16 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class ParallaxImage : MonoBehaviour
 {
     public float speedX = 0;
     public float speedY = 0;
-
     public int spawnCount = 2;
 
     private Transform[] c_transforms;
     private float image_width;
-
     private float minLeftx;
     private float maxRightx;
 
@@ -19,12 +18,8 @@ public class ParallaxImage : MonoBehaviour
     private const int roundFactor = 10000;
 
     private HorizontalDir hDir;
-
     private bool followTransform;
     private VerticalDir vDir;
-
-    public float colorChangeDuration = 1.0f; // You can adjust this for faster/slower transitions
-
 
     public void CleanUpImage()
     {
@@ -39,6 +34,7 @@ public class ParallaxImage : MonoBehaviour
     }
 
     public void InitImage(FloatRef speedMult, HorizontalDir hDir, VerticalDir vDir, bool followTransform)
+
     {
         this.speedMult = speedMult;
         this.hDir = hDir;
@@ -82,12 +78,12 @@ public class ParallaxImage : MonoBehaviour
             }
         }
 
-        
+
 
         float posx;
         for (int i = 1; i < c_transforms.Length; i++)
         {
-            if (hDir == HorizontalDir.Right)
+            if (hDir == HorizontalDir.Right || !followTransform) // Changed this condition
             {
                 posx = transform.position.x - image_width * i;
             }
@@ -97,8 +93,6 @@ public class ParallaxImage : MonoBehaviour
             }
 
             c_transforms[i] = PCopyAt(posx);
-            //if (followTransform) c_transforms[i] = PCopyAt(transform.position.x )
-
         }
     }
 
@@ -161,7 +155,7 @@ public class ParallaxImage : MonoBehaviour
         for (int i = 0; i < c_transforms.Length; i++)
         {
             Vector3 newPos = c_transforms[i].position;
-            newPos.y -= moveBy; 
+            newPos.y -= moveBy;
             c_transforms[i].position = newPos;
         }
     }
@@ -174,91 +168,81 @@ public class ParallaxImage : MonoBehaviour
             {
                 if (c_transforms[i].position.x < minLeftx)
                 {
-                    // reposition
-
                     Vector3 newPos = c_transforms[i].position;
-                    newPos.x = GetRightTransform().position.x + image_width; // to the left
+                    newPos.x = GetRightmostTransform().position.x + image_width;
                     c_transforms[i].position = newPos;
-
                 }
             }
-
         }
 
-        if (hDir == HorizontalDir.Right || followTransform) {
-
+        if (hDir == HorizontalDir.Right || followTransform)
+        {
             for (int i = 0; i < c_transforms.Length; i++)
             {
                 if (c_transforms[i].position.x > maxRightx)
                 {
                     Vector3 newPos = c_transforms[i].position;
-                    newPos.x = GetLeftTransform().position.x - image_width; // to the left
+                    newPos.x = GetLeftmostTransform().position.x - image_width;
                     c_transforms[i].position = newPos;
-
                 }
             }
-
         }
-       
+
+        if (!followTransform) // New condition for Move Over Time
+        {
+            for (int i = 0; i < c_transforms.Length; i++)
+            {
+                if (hDir == HorizontalDir.Left && c_transforms[i].position.x < minLeftx)
+                {
+                    Vector3 newPos = c_transforms[i].position;
+                    newPos.x = GetRightmostTransform().position.x + image_width;
+                    c_transforms[i].position = newPos;
+                }
+                else if (hDir == HorizontalDir.Right && c_transforms[i].position.x > maxRightx)
+                {
+                    Vector3 newPos = c_transforms[i].position;
+                    newPos.x = GetLeftmostTransform().position.x - image_width;
+                    c_transforms[i].position = newPos;
+                }
+            }
+        }
     }
 
-    private Transform GetRightTransform()
+    private Transform GetRightmostTransform()
     {
-        float currentX = float.NegativeInfinity;
-        Transform currentT = null;
+        return GetExtremeTransform(true);
+    }
+
+    private Transform GetLeftmostTransform()
+    {
+        return GetExtremeTransform(false);
+    }
+
+    private Transform GetExtremeTransform(bool getRightmost)
+    {
+        float extremeX = getRightmost ? float.NegativeInfinity : float.PositiveInfinity;
+        Transform extremeT = null;
 
         for (int i = 0; i < c_transforms.Length; i++)
         {
-            if (currentX < c_transforms[i].position.x) 
+            if (getRightmost && extremeX < c_transforms[i].position.x)
             {
-                currentX = c_transforms[i].position.x; // highest position
-                currentT = c_transforms[i];
-
+                extremeX = c_transforms[i].position.x;
+                extremeT = c_transforms[i];
+            }
+            else if (!getRightmost && extremeX > c_transforms[i].position.x)
+            {
+                extremeX = c_transforms[i].position.x;
+                extremeT = c_transforms[i];
             }
         }
 
-        return currentT;
-    }
-
-    private Transform GetLeftTransform()
-    {
-        float currentMinx = float.PositiveInfinity;
-        Transform currentT = null;
-
-        for (int i = 0; i < c_transforms.Length; i++)
-        {
-            if (currentMinx > c_transforms[i].position.x)
-            {
-                currentMinx = c_transforms[i].position.x; // highest position
-                currentT = c_transforms[i];
-
-            }
-        }
-
-        return currentT;
-    }
-
-    public void ChangeToSadColor()
-    {
-        float grayValue = 0.5f;
-        Color sadColor = new Color(grayValue, grayValue, grayValue + 0.2f); // slightly more blue
-        StartCoroutine(ChangeColorGradually(sadColor));
+        return extremeT;
     }
 
 
-    public IEnumerator ChangeColorGradually(Color targetColor)
-    {
-        Color startColor = GetComponent<SpriteRenderer>().color;
-        float elapsed = 0f;
 
-        while (elapsed < colorChangeDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / colorChangeDuration);
-            GetComponent<SpriteRenderer>().color = Color.Lerp(startColor, targetColor, t);
-            yield return null;
-        }
-    }
+
 
 }
 
