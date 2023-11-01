@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RoomExit : MonoBehaviour
 {
     public Transform player;
-    private bool hasEntered = false;  // Flag to track if Bea has entered the room
+    private bool hasEntered = false;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -13,13 +11,11 @@ public class RoomExit : MonoBehaviour
         {
             if (hasEntered)
             {
-                // Bea is exiting the room
                 VetStaffAI.OnBeaExitedRoom();
-                player.GetComponent<PlayerController>().OnExitRoom(); // Call the OnExitRoom method
+                player.GetComponent<PlayerController>().OnExitRoom(); 
             }
             else
             {
-                // Bea is entering the room for the first time
                 hasEntered = true;
             }
         }

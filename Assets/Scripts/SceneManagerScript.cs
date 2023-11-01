@@ -13,7 +13,6 @@ public class SceneManagerScript : MonoBehaviour
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int totalScenes = SceneManager.sceneCountInBuildSettings;
 
-        // Load next scene or loop back to the first scene
         int nextSceneIndex = (currentSceneIndex + 1) % totalScenes;
         SceneManager.LoadScene(nextSceneIndex);
     }

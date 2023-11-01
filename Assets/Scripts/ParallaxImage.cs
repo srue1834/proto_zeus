@@ -1,7 +1,4 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 
 public class ParallaxImage : MonoBehaviour
 {
@@ -52,7 +49,7 @@ public class ParallaxImage : MonoBehaviour
 
         if (followTransform)
         {
-            minLeftx = transform.position.x - image_width * (spawnCount + 1) - 0.5f; // smallest left most position
+            minLeftx = transform.position.x - image_width * (spawnCount + 1) - 0.5f;
             maxRightx = transform.position.x + image_width * (spawnCount + 1) + 0.5f;
 
 
@@ -61,7 +58,7 @@ public class ParallaxImage : MonoBehaviour
         {
             if (hDir == HorizontalDir.Left)
             {
-                minLeftx = transform.position.x - image_width - 0.5f; // smallest left most position
+                minLeftx = transform.position.x - image_width - 0.5f;
                 maxRightx = float.PositiveInfinity;
             }
             else if (hDir == HorizontalDir.Right)
@@ -83,7 +80,7 @@ public class ParallaxImage : MonoBehaviour
         float posx;
         for (int i = 1; i < c_transforms.Length; i++)
         {
-            if (hDir == HorizontalDir.Right || !followTransform) // Changed this condition
+            if (hDir == HorizontalDir.Right || !followTransform) 
             {
                 posx = transform.position.x - image_width * i;
             }
@@ -100,19 +97,16 @@ public class ParallaxImage : MonoBehaviour
     {
         GameObject go = Instantiate(gameObject, new Vector3(posX, transform.position.y, transform.position.z), Quaternion.identity, transform.parent);
 
-        // Check if the clone has the ParallaxImage script attached. If not, add it.
         ParallaxImage parallaxImage = go.GetComponent<ParallaxImage>();
         if (!parallaxImage)
         {
             parallaxImage = go.AddComponent<ParallaxImage>();
         }
 
-        // Initialize the clone's ParallaxImage script with the same properties as the original
         parallaxImage.speedX = this.speedX;
         parallaxImage.speedY = this.speedY;
         parallaxImage.spawnCount = this.spawnCount;
 
-        // Ensure we don't have nested ParallaxImage scripts
         foreach (ParallaxImage childImage in go.GetComponentsInChildren<ParallaxImage>())
         {
             if (childImage != parallaxImage)
@@ -188,7 +182,7 @@ public class ParallaxImage : MonoBehaviour
             }
         }
 
-        if (!followTransform) // New condition for Move Over Time
+        if (!followTransform) 
         {
             for (int i = 0; i < c_transforms.Length; i++)
             {
@@ -239,10 +233,6 @@ public class ParallaxImage : MonoBehaviour
 
         return extremeT;
     }
-
-
-
-
 
 }
 

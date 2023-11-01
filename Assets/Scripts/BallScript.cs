@@ -17,7 +17,6 @@ public class BallScript : MonoBehaviour
 
     public void SetColliderRadius(float radius)
     {
-        Debug.Log("Setting ball collider radius to: " + radius);
         ballCollider.radius = radius;
     }
 

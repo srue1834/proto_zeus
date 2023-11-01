@@ -10,17 +10,13 @@ public class RoomSound : MonoBehaviour
     [SerializeField]
     private Volume volume;
 
-    private AudioSource audioSource;  // Reference to the AudioSource component
+    private AudioSource audioSource;  
     private Coroutine vignetteCoroutine;
 
     private void Start()
     {
-        // Get the reference to the AudioSource component
         audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            Debug.LogError("RoomSound script requires an AudioSource component!");
-        }
+        
     }
 
     private void OnTriggerEnter(Collider other)
@@ -52,7 +48,7 @@ public class RoomSound : MonoBehaviour
                 audioSource.Play();
             }
 
-            // Reset vignette
+            // reset vignette
             if (vignetteCoroutine != null)
             {
                 StopCoroutine(vignetteCoroutine);
@@ -61,7 +57,7 @@ public class RoomSound : MonoBehaviour
             Vignette vignette;
             if (volume.profile.TryGet(out vignette))
             {
-                vignette.intensity.value = 0f;  // Reset to the default or desired value
+                vignette.intensity.value = 0f;  
             }
         }
     }
@@ -72,7 +68,7 @@ public class RoomSound : MonoBehaviour
         if (volume.profile.TryGet(out vignette))
         {
             float targetIntensity = 0.5f;
-            float duration = 2.0f;  // Time taken to reach the target intensity
+            float duration = 2.0f;  
             float timeElapsed = 0f;
 
             while (timeElapsed < duration)
@@ -83,8 +79,7 @@ public class RoomSound : MonoBehaviour
                 yield return null;
             }
 
-            // Begin "palpitation" effect
-            float palpitationDuration = 0.5f;  // Duration for one full cycle (increase + decrease)
+            float palpitationDuration = 0.5f;
             while (true)
             {
                 float currentIntensity = 0.5f + 0.05f * Mathf.Sin(2 * Mathf.PI * Time.time / palpitationDuration);

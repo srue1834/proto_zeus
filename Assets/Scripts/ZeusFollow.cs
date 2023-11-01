@@ -1,6 +1,6 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
 using UnityEngine.SceneManagement;
 
 public class ZeusFollow : MonoBehaviour
@@ -11,7 +11,6 @@ public class ZeusFollow : MonoBehaviour
     public float rotationSpeed = 5.0f;
     public float lookaheadDistance = 1.0f;
 
-    private Vector3 velocity = Vector3.zero;
     private Vector3 lastBeaPosition = Vector3.zero;
     private float currentMovementSpeed = 0f;
     private float speedAdjustmentRate = 2.0f;
@@ -19,29 +18,19 @@ public class ZeusFollow : MonoBehaviour
     private Vector3 targetPosition;
     private Animator zeusAnimator;
 
-    public Transform holdPosition;  // Place where Zeus holds the ball
+    public Transform holdPosition;  
 
     private NavMeshAgent agent;
-    private int fetchCounter = 0;  // New variable to track number of fetches
-    private float tiredSpeedModifier = 0.5f;  // Speed reduction when tired
+    private int fetchCounter = 0;  
+    private float tiredSpeedModifier = 0.5f; 
 
     private float exhaustedMoveTime = 0f;
-    private float maxExhaustedMoveTime = 1f;  // Zeus will move for 1.5 seconds before stopping
-    private Vector3 lastWalkingDirection = Vector3.forward;  // default to forward
+    private float maxExhaustedMoveTime = 1f;  
 
     [Header("Sound")]
-    public AudioSource zeusAudioSource; // Reference to Zeus's AudioSource
-    public AudioClip pantingClip;       // Panting sound
-    public AudioClip snoringClip;       // Snoring sound
-
-    private bool startedSnoring = false;  // New flag to track if snoring sound has started
-
-    private bool hasStartedWaitCoroutine = false; // Add this at the class level
-
-    private float timeNearBall = 0f;  // Add this at the class level to track time spent near the ball
-    private float stuckThreshold = 1.5f;  // Time in seconds Zeus needs to be close to the ball before we consider him stuck
-
-
+    public AudioSource zeusAudioSource; 
+    public AudioClip pantingClip;       
+    public AudioClip snoringClip;      
     
     public enum ZeusState
     {
@@ -54,7 +43,6 @@ public class ZeusFollow : MonoBehaviour
         StoppedAtBea,
         WaitingForBeaCall
     }
-
 
     public bool IsZeusExhausted()
     {
@@ -71,6 +59,10 @@ public class ZeusFollow : MonoBehaviour
         get { return currentState; }
     }
 
+    public bool HasZeusStopped()
+    {
+        return (currentState == ZeusState.StoppedAtBea || currentState == ZeusState.Exhausted);
+    }
 
     private ZeusState currentState = ZeusState.Idle;
 
@@ -83,15 +75,16 @@ public class ZeusFollow : MonoBehaviour
         if (SceneManager.GetActiveScene().name == "Main")
         {
             if (agent != null)
+            {
                 agent.enabled = false;
+            }
         }
         else
         {
-            // Initialize audio source
-        if (zeusAudioSource == null)
-        {
-            zeusAudioSource = GetComponent<AudioSource>();
-        }
+            if (zeusAudioSource == null)
+            {
+                zeusAudioSource = GetComponent<AudioSource>();
+            }
         }
         
     }
@@ -100,11 +93,10 @@ public class ZeusFollow : MonoBehaviour
     {
         PlayerController playerController = bea.GetComponent<PlayerController>();
 
-        // Check if Bea has set the 'shouldZeusWait' flag and Zeus is currently idle
         if (playerController.shouldZeusWait && (currentState == ZeusState.Idle || currentState == ZeusState.Exhausted))
         {
-            currentState = ZeusState.WaitingForBeaCall;  // Change Zeus's state to waiting
-            playerController.shouldZeusWait = false; // Reset the flag.
+            currentState = ZeusState.WaitingForBeaCall; 
+            playerController.shouldZeusWait = false; 
         }
 
         switch (currentState)
@@ -116,12 +108,15 @@ public class ZeusFollow : MonoBehaviour
                     PlaySound(pantingClip);
                 }
                 break;
+
             case ZeusState.TurningToBea:
                 TurnTowardsBea();
                 break;
+
             case ZeusState.ReturningToBea:
                 MoveTowardsBea();
                 break;
+
             case ZeusState.SlowlyApproachingBea:
                 SlowlyMoveTowardsBea();
                 if (zeusAudioSource.isPlaying)
@@ -129,9 +124,11 @@ public class ZeusFollow : MonoBehaviour
                     PlaySound(pantingClip);
                 }
                 break;
+
             case ZeusState.Idle:
                 MoveTowardsBea();
                 break;
+
             case ZeusState.Exhausted:
                 MoveInExhaustedState();
                 if (zeusAudioSource.isPlaying)
@@ -141,7 +138,6 @@ public class ZeusFollow : MonoBehaviour
                 break;
 
             case ZeusState.StoppedAtBea:
-                // Do nothing. Zeus simply stands still.
                 break;
         }
     }
@@ -165,9 +161,6 @@ public class ZeusFollow : MonoBehaviour
 
     void SlowlyMoveTowardsBea()
     {
-
-
-        // Ensure the agent is stopped
         if (agent.enabled)
         {
             agent.isStopped = true;
@@ -178,20 +171,17 @@ public class ZeusFollow : MonoBehaviour
             }
         }
 
-        float slowSpeed = speed * 0.1f;  // Adjust the factor as needed
+        float slowSpeed = speed * 0.1f;  
         Vector3 directionToBea = (bea.position - transform.position).normalized;
         transform.position += directionToBea * slowSpeed * Time.deltaTime;
 
-        // Rotate Zeus to face Bea
         Quaternion currentLookRotation = Quaternion.LookRotation(directionToBea);
         transform.rotation = Quaternion.Slerp(transform.rotation, currentLookRotation, rotationSpeed * Time.deltaTime);
 
-        if (Vector3.Distance(transform.position, bea.position) < 1.0f)  // Stop moving when close enough
+        if (Vector3.Distance(transform.position, bea.position) < 1.0f) 
         {
             currentState = ZeusState.StoppedAtBea;
         }
-
-
     }
 
     public bool IsExhaustedAfterFifthFetch()
@@ -204,43 +194,38 @@ public class ZeusFollow : MonoBehaviour
     {
         if (exhaustedMoveTime >= maxExhaustedMoveTime)
         {
-            // Zeus has moved long enough, stop him
             currentMovementSpeed = 0f;
-            if (agent.enabled) // Check if the agent is enabled before stopping it
+            if (agent.enabled) 
             {
                 agent.isStopped = true;
             }
             zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
 
-            return; // Exit the function
+            return; 
         }
 
-        // Otherwise, keep moving towards the ball (at half speed)
         float currentSpeed = speed * 0.5f;
         Vector3 directionToBall = (targetPosition - transform.position).normalized;
         transform.position += directionToBall * currentSpeed * Time.deltaTime;
 
-        // Rotate Zeus to face the ball
         Quaternion currentLookRotation = Quaternion.LookRotation(directionToBall);
         transform.rotation = Quaternion.Slerp(transform.rotation, currentLookRotation, rotationSpeed * Time.deltaTime);
 
-        // Update the exhaustedMoveTime
         exhaustedMoveTime += Time.deltaTime;
-
 
     }
 
     void TurnTowardsBea()
     {
-        agent.isStopped = true; // Stop the agent from moving while turning
+        agent.isStopped = true;
 
         Vector3 directionToBea = (bea.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(directionToBea);
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
 
-        if (Quaternion.Angle(transform.rotation, lookRotation) < 5f) // Close enough to the desired rotation
+        if (Quaternion.Angle(transform.rotation, lookRotation) < 5f)
         {
-            agent.isStopped = false; // Allow the agent to move again
+            agent.isStopped = false; 
             currentState = ZeusState.ReturningToBea;
         }
     }
@@ -259,13 +244,11 @@ public class ZeusFollow : MonoBehaviour
         BallInteraction.ballHasBeenThrown = false;
         fetchCounter++;
 
-        currentState = ZeusState.TurningToBea;  // After picking up the ball, Zeus should turn to Bea
+        currentState = ZeusState.TurningToBea;
 
         currentMovementSpeed = 0f;
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
 
-        // Zeus has picked up the ball.
-        // Set the ball's collider radius back to 3.5.
         BallScript ballScript = ball.GetComponent<BallScript>();
         if (ballScript != null)
         {
@@ -273,21 +256,18 @@ public class ZeusFollow : MonoBehaviour
         }
     }
 
-
-
-
     public void BallHitGround(Vector3 position)
     {
         if (fetchCounter >= 3)
         {
             currentState = ZeusState.Exhausted;
             zeusAnimator.SetBool("isFalling", true);
-            agent.ResetPath(); // Clear the agent's destination
+            agent.ResetPath(); 
             return;
         }
 
         targetPosition = position;
-        agent.isStopped = false;  // Ensure the NavMeshAgent is active
+        agent.isStopped = false;  
 
         currentState = ZeusState.Fetching;
     }
@@ -300,7 +280,6 @@ public class ZeusFollow : MonoBehaviour
             return;
         }
 
-
         float distanceToBea = Vector3.Distance(transform.position, bea.position);
         Vector3 beaMovementDirection = (bea.position - lastBeaPosition).normalized;
 
@@ -309,28 +288,27 @@ public class ZeusFollow : MonoBehaviour
             Vector3 lookaheadPosition = bea.position + beaMovementDirection * lookaheadDistance;
             agent.SetDestination(lookaheadPosition);
 
-            // Adjust speed based on distance
             if (distanceToBea > followDistance * 2)
             {
-                agent.speed = speed * 2; // Double the speed to catch up
+                agent.speed = speed * 2;
             }
             else
             {
                 agent.speed = speed;
             }
 
-            // Apply the tiredSpeedModifier if Zeus has fetched the ball more than twice
             if (fetchCounter >= 2)
             {
                 agent.speed *= tiredSpeedModifier;
-                currentMovementSpeed = 2.0f;  // Tired walk speed for blend tree
+                currentMovementSpeed = 2.0f;  
             }
             else
             {
-                currentMovementSpeed = 1.0f;  // Regular walk speed for blend tree
+                currentMovementSpeed = 1.0f; 
             }
 
-            currentMovementSpeed *= agent.velocity.magnitude / agent.speed;  // This scales the speed value based on Zeus's actual speed
+
+            currentMovementSpeed *= agent.velocity.magnitude / agent.speed;  
         }
         else
         {
@@ -345,13 +323,10 @@ public class ZeusFollow : MonoBehaviour
     void MoveTowardsBall()
     {
         float distance = Vector3.Distance(transform.position, targetPosition);
-
-        // Use a smaller threshold to determine when Zeus is close enough to pick up the ball
         float pickupThreshold = 0.4f;
 
         if (distance > pickupThreshold)
         {
-            // If Zeus is moving towards the ball, ensure the ball's collider radius is set to 0 to prevent him from getting stuck
             GameObject ballObject = GameObject.FindGameObjectWithTag("Ball");
             BallScript ballScript = ballObject.GetComponent<BallScript>();
             if (ballScript != null)
@@ -359,24 +334,21 @@ public class ZeusFollow : MonoBehaviour
                 ballScript.SetColliderRadius(0.1f);
             }
 
-            // Adjust Zeus's speed if he is tired (i.e., after fetching twice)
             float currentSpeed = speed;
             if (fetchCounter >= 2)
             {
-                currentSpeed *= tiredSpeedModifier;  // Reduce speed when tired
-                currentMovementSpeed = 2.0f;  // Tired walk speed for blend tree
+                currentSpeed *= tiredSpeedModifier;  
+                currentMovementSpeed = 2.0f;  
             }
             else
             {
-                currentMovementSpeed = 1.0f;  // Regular walk speed for blend tree
+                currentMovementSpeed = 1.0f;  
             }
 
-            // Linear movement towards the ball
             Vector3 directionToBall = (targetPosition - transform.position).normalized;
-            float moveDistance = Mathf.Min(currentSpeed * Time.deltaTime, distance - pickupThreshold);  // Move by the smaller of the two values
+            float moveDistance = Mathf.Min(currentSpeed * Time.deltaTime, distance - pickupThreshold);  
             transform.position += directionToBall * moveDistance;
 
-            // Rotate Zeus to face the ball
             Quaternion lookRotation = Quaternion.LookRotation(directionToBall);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
         }
@@ -389,13 +361,9 @@ public class ZeusFollow : MonoBehaviour
         zeusAnimator.SetFloat("movementSpeed", currentMovementSpeed);
     }
 
-
-
-    // New Coroutine for the delay:
     IEnumerator WaitBeforeApproaching()
     {
-
-        yield return new WaitForSeconds(5f); // Wait for 3 seconds
+        yield return new WaitForSeconds(4f); 
         currentState = ZeusState.SlowlyApproachingBea;
     }
 

@@ -14,27 +14,33 @@ public class BallInteraction : MonoBehaviour
     public static bool ballHasBeenThrown = false;
     public UIController uiController;
 
-    private float ballPromptTimer = 0f;
-    public float firstTimePromptDelay = 1f;  // Adjusted delay for the first time
-    public float subsequentPromptDelay = 3f;  // Adjusted delay for subsequent times
+    public float firstTimePromptDelay = 1f; 
+    public float subsequentPromptDelay = 3f; 
 
     private bool hasInteractedWithBall = false;
     private bool isFirstInteraction = true;
     private bool isFirstInteractionThrow = true;
 
     public static int ballThrowCount = 0;
-    private Light ballLight;  // Reference to the ball's light
+    private Light ballLight; 
 
+
+    private ZeusFollow zeusFollow;
+
+    void Start()
+    {
+        zeusFollow = FindObjectOfType<ZeusFollow>();
+    }
 
 
     void Update()
     {
-        // Reference to PlayerController
-        PlayerController playerController = GetComponent<PlayerController>();
-
-        // If the call prompt is active, do nothing
-        if (playerController && playerController.IsCallPromptActive)
+        if (zeusFollow && zeusFollow.HasZeusStopped())
+        {
+            this.enabled = false;  
             return;
+        }
+
 
         if (ball == null)
         {
@@ -45,15 +51,12 @@ public class BallInteraction : MonoBehaviour
                 if (collider.CompareTag("Ball"))
                 {
                     ballInRange = true;
-
-                    // Get the ball's light component
                     ballLight = collider.GetComponentInChildren<Light>();
+
                     if (ballLight)
                     {
-                        ballLight.enabled = true;  // Turn on the light when the ball is on the ground
+                        ballLight.enabled = true;  
                     }
-
-
 
                     uiController.ShowPickUpBallPrompt(true);
                     
@@ -66,6 +69,7 @@ public class BallInteraction : MonoBehaviour
                         ball.transform.SetParent(null);
                         ball.transform.position = holdPosition.position;
                         ball.transform.SetParent(holdPosition);
+
                         hasInteractedWithBall = true;
                         isFirstInteraction = false;
                         uiController.ShowPickUpBallPrompt(false);
@@ -83,7 +87,7 @@ public class BallInteraction : MonoBehaviour
             uiController.ShowThrowBallPrompt(true);
             if (ballLight)
             {
-                ballLight.enabled = false;  // Turn off the light when the ball is picked up
+                ballLight.enabled = false;  
             }
 
             if (Input.GetKeyDown(throwKey))
@@ -93,7 +97,7 @@ public class BallInteraction : MonoBehaviour
                 Vector3 throwDirection = (transform.forward + Vector3.up).normalized;
                 ballRb.AddForce(throwDirection * throwForce, ForceMode.VelocityChange);
                 ballHasBeenThrown = true;
-                ballThrowCount++;  // Increment throw count
+                ballThrowCount++;  
                 isFirstInteractionThrow = false;
 
                 ball = null;
